@@ -1,9 +1,11 @@
 use std::io;
 use std::cmp::Ordering;
 use rand::prelude::*;
+
 fn main() {
     println!("Guess the number!");
     let secret_number = rand::rng().random_range(1..=100);
+    
     println!("The secret number is: {secret_number}");
 
     loop {

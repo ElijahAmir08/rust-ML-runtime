@@ -27,5 +27,32 @@
     - Rust also uses similar to syntax to C++ such as "&" which tells rust that an argument is a reference
     - Overall I am finding Rust to be syntactically dense, but has really conveinent/almost flexible features while maintaining to be a precise language. The documentation is very easy to follow and breaks down the language well. I appreciate how much the syntax tries to read like the human language with words such as "use" for calling libraries, "loop {}" to begin a loop, or "match" for creating conditional branches. I suspect that there is going to be more control/optimization decisions while remaining close to the human lanaguage.
     - To summarize:
-        - Challenges: I am still developing an understanding of Rust's general syntax, function vs macros, and how exactly references work. It feels more syntactically dense than other languages like Python, but the explicit language and compiler guidance are worth exploring.
-        - Connection to the Project: Today introduced several conccepts relevant to request scheduling, including comparisons, conditional brancing, loops, and error handling. I additionally gained more experience using Cargo to manage external dependencies. 
+        - Challenges: 
+            - I am still developing an understanding of Rust's general syntax, function vs macros, and how exactly references work. It feels more syntactically dense than other languages like Python, but the explicit language and compiler guidance are worth exploring.
+            - Interested in how shadowing interacts with scopes
+        - Connection to the Project: 
+            - Today introduced several conccepts relevant to request scheduling, including comparisons, conditional brancing, loops, and error handling. I additionally gained more experience using Cargo to manage external dependencies.
+
+# October 23, 2026
+
+### What I have learned/accomplished [EH]
+    - Completed Chapter 3 of the Rust Book, covering common programming concepts in the context of Rust. This chapter was relatively straightforward given previous programming experience, although certain Rust-specific features stood out.
+    - Shadowing was covered in more detail, which clearified my confusion from yesterday:
+        - A phrase from the doc that helped me was "The first variable is shadowed by the second". The compiler resolves references to the most recent visible binding within the current scope. 
+        - The keyword let is needed when shadowing as it is creates a new variable binding with the same name rather than modifying the original. This allows the programmer to transform its value while still preserving immutability, including changing its type such as (let spaces = "  "; let spaces = spaces.len() // Calling .len() on the original spaces)
+        - I am however still curious how exactly the compiler is resolving shadowing or if this introduces additional runtime overhead?
+    - Data types were covered as well which was straightforward, but I did encounter the term known as "panicking" in this section. It is an unrecoverable error condition, which may be a common term but was entertaining to see.
+    - The chapter also covered tuples, arrays, statements versus expressions, functions, and control flow.
+        - One interesting distinction is that Rust treats variable declarations as statements rather than expressions, meaning syntax such as let x = (let y = 6); is invalid. 
+            - Assignments are treated as expressions that evaluate to () not the assigned value. Rust does not want assignments to be used as meaningful values. 
+        - Rust relies heavily on expressions. Even blocks {} and if/else can evaluate to values that can be assigned to a variable.
+        - I also learned that Rust functions can implicitly return the value of their final expression. For example, fn five() -> i32 { 5 } returns 5, whereas placing a semicolon after the 5 discards the value and causes a return-type mismatch.
+        - The distinction between statements and expressions is still somewhat unfamiliar, particularly because entire blocks of Rust code can evaluate to values. As well as the fact that the documentation for this topic felt overexplained. 
+    - Challenges:
+        - Understanding how shadowing is implemented by the compiler and whether it affects runtime performance.
+        - Becoming comfortable distinguishing statements from expressions and recognizing when semicolons change behavior.
+        - Learning to recognize which Rust features differ meaningfully from C/C++ and Python rather than simply having different syntax.
+    - Connection to the project:
+        - Shadowing, control flow, and Rust's type system will be definitely relevant when implementing request scheduling and dispatching algorithms.
+        - Understanding Rust's compilation model and how it handles variable bindings will help to explain runtime behavior and performance differences.
+
