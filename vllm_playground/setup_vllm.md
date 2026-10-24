@@ -11,7 +11,9 @@ cd requirments
 grep -v '^torch==' cuda.txt | uv pip install -r -
 cd ..
 uv pip install setuptools_scm
+export MAX_JOBS=4
 export CUDA_HOME=/sw/cuda/cuda-12.9
+export TORCH_CUDA_ARCH_LIST="7.0"
 uv pip install -e . --no-build-isolation`
 ```
 
