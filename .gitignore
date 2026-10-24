@@ -1,2 +1,3 @@
 # Cargo Compilation Output
-target/
+target/vllm_playground/AzureLLMInferenceTrace_conv_1week.csv
+vllm_playground/AzureLLMInferenceTrace_conv_1week.csv
