@@ -56,3 +56,22 @@
         - Shadowing, control flow, and Rust's type system will be definitely relevant when implementing request scheduling and dispatching algorithms.
         - Understanding Rust's compilation model and how it handles variable bindings will help to explain runtime behavior and performance differences.
 
+
+# October 25, 2026
+### What I have accomplished [EH]
+    - Was not as quick moving today, but began the chapter about Ownership. Which serves the main purpose of making memory safe gurantees without needing a garbage collector.
+        - There are three rules: 
+            1. Each value in Rust has an owner 
+            2. Only one owner at a time 
+            3. When owner out of scope, drop value (aka free space)
+    - This chapter also reviewed the stack and heap, focusing on how mem is allocated/managed. The String type was used as an example since its contents are stored on the heap.
+    - A key takeaway is that Rust calls drop automatically when a variable is out of scope, to release resources such as heap-allocated memory without manually deallocating.
+        - However, this leaves a problem of double free errors. Such as when (s1 = String::from("string"); s2 = s1;) both strings now point to the same heap which will try to free the same memory. To solve this Rust simply invalidates the s1 variable after s2 A.k.A s1 moves into s2. 
+            - If programmer wants s1 to be still valid with independent copies of heap data, the method .clone() can be used (s2 = s1.clone())
+        - It is important to understand this intuition applies to function calls/returns in which passing a variable into a method that function now has ownership.  
+    - Overall, I find this approach of memory management  clever and straightforward conceptually. I am still appreciating the descriptive terminology, such as move and ownership.
+    - Further Exploration:
+        - How can functions access values without taking ownership?
+        - How does Rust's ownership model affect concurrency and sharing data between threads?
+    - Connection to Project:
+        - Avoiding unnecessary cloning of large request data or prompt strings could help reduce memory allocation and copying overhead.
