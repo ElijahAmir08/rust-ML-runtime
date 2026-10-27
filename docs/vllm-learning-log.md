@@ -1,21 +1,21 @@
-## This is my learning log for vllm
+# This is my learning log for vllm
 
 *I will provide all of my the resources I have been using to learn here. If you want to learn the concepts more in depth I recommend using those resources, but I also hope these notes will be somewhat comprehensive.*
 
-### Week 1
+## Week 1
 **Resources:**
 - VLLM overview: https://vllm.ai/blog/2025-09-05-anatomy-of-vllm#prefix-caching
 - Paged attention details: https://arxiv.org/pdf/2309.06180
 - Nvidia GPU layout *(sections 3-6)*: https://arxiv.org/pdf/2309.06180
 
-#### vLLM overview
+### vLLM overview
 This will initially cover the components of a general single GPU system how it generally implements the KV-cache.
-##### The LLM core consists of:
+#### The LLM core consists of:
 - The core client (who process the requests and is responsible for the generating the output.)
 - The preprocessor (turns raw input into an `EngineCoreRequest` that the core client can then process)
 - The output processors (Responsible for translating the clients output into a `RequestOutput` for the application.)
 
-##### The Engine core client is where the meat and potatoes are:
+#### The Engine core client is where the meat and potatoes are:
 - the model executer (the thing generates a model forward pass)
 - structured output manager which is used for something called guided decoding. Guided decoding is an optimization technique that we have not covered yet.
 - scheduler
@@ -55,10 +55,10 @@ The model executer has its own very important components which we list here:
     - prepare attention metadata (exact use is not covered yet) (e.g. set backend to FlashAttention, ...)
     - unless `--enforce_eager` is provided, do a dummy run to capture CUDA graphs
 
-##### Generate Function
+#### Generate Function
 ...
 
-##### The Scheduler
+#### The Scheduler
 **Types of Requests:**
 - prefill requests - is a forward pass over all the prompt tokens
 - decode request forward pass of the most recent token using the kv-cached values for previous tokens
@@ -85,6 +85,6 @@ allocate_slots():
     - via the kv-cache manage's coordintor, fetches the first n free blocks from the block pool(which is a doubly linked list) stores to req_to_block (a dict mappig request ids to kv blocks)
 ```
 
-#### VLLM algorithms
+### VLLM algorithms
 
 
