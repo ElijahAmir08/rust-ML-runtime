@@ -109,3 +109,9 @@ The model executor has its own important components:
 ### vLLM Algorithms
 
 *TODO*
+
+
+
+
+# Week 2
+To Read: https://gordicaleksa.medium.com/eli5-flash-attention-5c44017022ad
