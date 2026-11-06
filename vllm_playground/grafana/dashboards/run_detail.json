@@ -1,0 +1,1122 @@
+{
+  "uid": "vllm-run",
+  "title": "vLLM run detail",
+  "description": "Load, vLLM scheduler state and latency over the course of selected runs.",
+  "tags": [
+    "vllm",
+    "workload_sim"
+  ],
+  "timezone": "utc",
+  "schemaVersion": 39,
+  "editable": true,
+  "graphTooltip": 1,
+  "time": {
+    "from": "1999-12-31T23:59:55.000Z",
+    "to": "2000-01-01T00:05:00.000Z"
+  },
+  "timepicker": {},
+  "refresh": "",
+  "templating": {
+    "list": [
+      {
+        "type": "query",
+        "name": "experiment",
+        "label": "Experiment",
+        "datasource": {
+          "type": "frser-sqlite-datasource",
+          "uid": "workload-sim"
+        },
+        "query": "SELECT DISTINCT experiment FROM runs ORDER BY experiment",
+        "definition": "SELECT DISTINCT experiment FROM runs ORDER BY experiment",
+        "refresh": 1,
+        "multi": false,
+        "includeAll": false,
+        "hide": 0,
+        "sort": 0,
+        "current": {},
+        "options": []
+      },
+      {
+        "type": "query",
+        "name": "run",
+        "label": "Run",
+        "datasource": {
+          "type": "frser-sqlite-datasource",
+          "uid": "workload-sim"
+        },
+        "query": "SELECT run_id AS __value, label AS __text FROM runs WHERE experiment = '$experiment' ORDER BY mode, scenario, rate, rep",
+        "definition": "SELECT run_id AS __value, label AS __text FROM runs WHERE experiment = '$experiment' ORDER BY mode, scenario, rate, rep",
+        "refresh": 1,
+        "multi": true,
+        "includeAll": false,
+        "hide": 0,
+        "sort": 0,
+        "current": {},
+        "options": []
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "text",
+      "title": "",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 2
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "**x-axis of every chart = time.** Sweep runs: **elapsed time since the run's first request** (hh:mm:ss; 00:01:30 = 90 s in; the time picker shows this as 2000-01-01). Replays: the **trace's own UTC time of day**. The first `warmup` seconds of a sweep are not in its summaries. Pick several runs in *Run* to overlay them; drag on a chart to zoom."
+      },
+      "id": 1
+    },
+    {
+      "type": "timeseries",
+      "title": "Offered load: requests arriving per second",
+      "description": "Requests arriving in each window (Poisson for sweeps, the real trace for replay).",
+      "gridPos": {
+        "x": 0,
+        "y": 2,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "workload-sim"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "workload-sim"
+          },
+          "queryType": "time series",
+          "queryText": "SELECT time, arrivals_per_s AS value, label FROM windows JOIN runs USING (run_id) WHERE windows.run_id IN (${run:sqlstring}) ORDER BY time",
+          "rawQueryText": "SELECT time, arrivals_per_s AS value, label FROM windows JOIN runs USING (run_id) WHERE windows.run_id IN (${run:sqlstring}) ORDER BY time",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "displayName": "${__field.labels.label}",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "spanNulls": true,
+            "showPoints": "never",
+            "pointSize": 4,
+            "fillOpacity": 0,
+            "lineInterpolation": "linear",
+            "axisLabel": "arrivals (requests/s)"
+          },
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 2
+    },
+    {
+      "type": "timeseries",
+      "title": "Completions: requests finishing per second",
+      "description": "Requests finishing in each window. Falls behind arrivals when vLLM saturates.",
+      "gridPos": {
+        "x": 12,
+        "y": 2,
+        "w": 12,
+        "h": 8
+      },
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "workload-sim"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "workload-sim"
+          },
+          "queryType": "time series",
+          "queryText": "SELECT time, completions_per_s AS value, label FROM windows JOIN runs USING (run_id) WHERE windows.run_id IN (${run:sqlstring}) ORDER BY time",
+          "rawQueryText": "SELECT time, completions_per_s AS value, label FROM windows JOIN runs USING (run_id) WHERE windows.run_id IN (${run:sqlstring}) ORDER BY time",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "displayName": "${__field.labels.label}",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "spanNulls": true,
+            "showPoints": "never",
+            "pointSize": 4,
+            "fillOpacity": 0,
+            "lineInterpolation": "linear",
+            "axisLabel": "completions (requests/s)"
+          },
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 3
+    },
+    {
+      "type": "timeseries",
+      "title": "vLLM batch size: requests running (count)",
+      "description": "vLLM's num_requests_running, sampled every 1 s.",
+      "gridPos": {
+        "x": 0,
+        "y": 10,
+        "w": 8,
+        "h": 8
+      },
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "workload-sim"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "workload-sim"
+          },
+          "queryType": "time series",
+          "queryText": "SELECT time, running AS value, label FROM server JOIN runs USING (run_id) WHERE server.run_id IN (${run:sqlstring}) ORDER BY time",
+          "rawQueryText": "SELECT time, running AS value, label FROM server JOIN runs USING (run_id) WHERE server.run_id IN (${run:sqlstring}) ORDER BY time",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "displayName": "${__field.labels.label}",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "spanNulls": true,
+            "showPoints": "never",
+            "pointSize": 4,
+            "fillOpacity": 0,
+            "lineInterpolation": "linear",
+            "axisLabel": "requests running"
+          },
+          "unit": "none",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 4
+    },
+    {
+      "type": "timeseries",
+      "title": "vLLM queue depth: requests waiting (count)",
+      "description": "vLLM's num_requests_waiting, sampled every 1 s: requests held in its scheduler. Growing without bound = overloaded.",
+      "gridPos": {
+        "x": 8,
+        "y": 10,
+        "w": 8,
+        "h": 8
+      },
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "workload-sim"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "workload-sim"
+          },
+          "queryType": "time series",
+          "queryText": "SELECT time, waiting AS value, label FROM server JOIN runs USING (run_id) WHERE server.run_id IN (${run:sqlstring}) ORDER BY time",
+          "rawQueryText": "SELECT time, waiting AS value, label FROM server JOIN runs USING (run_id) WHERE server.run_id IN (${run:sqlstring}) ORDER BY time",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "displayName": "${__field.labels.label}",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "spanNulls": true,
+            "showPoints": "never",
+            "pointSize": 4,
+            "fillOpacity": 0,
+            "lineInterpolation": "linear",
+            "axisLabel": "requests waiting"
+          },
+          "unit": "none",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 5
+    },
+    {
+      "type": "timeseries",
+      "title": "KV cache used (% of blocks)",
+      "description": "Fraction of KV-cache blocks in use. Near 100% vLLM preempts running requests.",
+      "gridPos": {
+        "x": 16,
+        "y": 10,
+        "w": 8,
+        "h": 8
+      },
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "workload-sim"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "workload-sim"
+          },
+          "queryType": "time series",
+          "queryText": "SELECT time, kv_cache_usage AS value, label FROM server JOIN runs USING (run_id) WHERE server.run_id IN (${run:sqlstring}) ORDER BY time",
+          "rawQueryText": "SELECT time, kv_cache_usage AS value, label FROM server JOIN runs USING (run_id) WHERE server.run_id IN (${run:sqlstring}) ORDER BY time",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "displayName": "${__field.labels.label}",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "spanNulls": true,
+            "showPoints": "never",
+            "pointSize": 4,
+            "fillOpacity": 0,
+            "lineInterpolation": "linear",
+            "axisLabel": "KV cache used (%)"
+          },
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 6
+    },
+    {
+      "type": "timeseries",
+      "title": "Time to first token: p50 and p99 per time window (log scale)",
+      "description": "Requests grouped by arrival time into windows (10 s of run time for sweeps).",
+      "gridPos": {
+        "x": 0,
+        "y": 18,
+        "w": 12,
+        "h": 9
+      },
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "workload-sim"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "workload-sim"
+          },
+          "queryType": "time series",
+          "queryText": "SELECT windows.time, windows.ttft_p50_ms AS p50, windows.ttft_p99_ms AS p99, label FROM windows JOIN runs USING (run_id) WHERE windows.run_id IN (${run:sqlstring}) ORDER BY time",
+          "rawQueryText": "SELECT windows.time, windows.ttft_p50_ms AS p50, windows.ttft_p99_ms AS p99, label FROM windows JOIN runs USING (run_id) WHERE windows.run_id IN (${run:sqlstring}) ORDER BY time",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "displayName": "${__field.name} \u00b7 ${__field.labels.label}",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "spanNulls": true,
+            "showPoints": "never",
+            "pointSize": 4,
+            "fillOpacity": 0,
+            "lineInterpolation": "linear",
+            "axisLabel": "time to first token",
+            "scaleDistribution": {
+              "type": "log",
+              "log": 10
+            }
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 7
+    },
+    {
+      "type": "timeseries",
+      "title": "Time per output token: p50 and p99 per time window (ms per token)",
+      "description": "Requests grouped by arrival time into windows (10 s of run time for sweeps).",
+      "gridPos": {
+        "x": 12,
+        "y": 18,
+        "w": 12,
+        "h": 9
+      },
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "workload-sim"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "workload-sim"
+          },
+          "queryType": "time series",
+          "queryText": "SELECT windows.time, windows.tpot_p50_ms AS p50, windows.tpot_p99_ms AS p99, label FROM windows JOIN runs USING (run_id) WHERE windows.run_id IN (${run:sqlstring}) ORDER BY time",
+          "rawQueryText": "SELECT windows.time, windows.tpot_p50_ms AS p50, windows.tpot_p99_ms AS p99, label FROM windows JOIN runs USING (run_id) WHERE windows.run_id IN (${run:sqlstring}) ORDER BY time",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "displayName": "${__field.name} \u00b7 ${__field.labels.label}",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "spanNulls": true,
+            "showPoints": "never",
+            "pointSize": 4,
+            "fillOpacity": 0,
+            "lineInterpolation": "linear",
+            "axisLabel": "time per output token"
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 8
+    },
+    {
+      "type": "timeseries",
+      "title": "Every request: time to first token, by arrival time (log scale)",
+      "description": "One dot per request, placed at its scheduled arrival time.",
+      "gridPos": {
+        "x": 0,
+        "y": 27,
+        "w": 12,
+        "h": 9
+      },
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "workload-sim"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "workload-sim"
+          },
+          "queryType": "time series",
+          "queryText": "SELECT time, ttft_ms AS value, label FROM requests JOIN runs USING (run_id) WHERE requests.run_id IN (${run:sqlstring}) AND success ORDER BY time",
+          "rawQueryText": "SELECT time, ttft_ms AS value, label FROM requests JOIN runs USING (run_id) WHERE requests.run_id IN (${run:sqlstring}) AND success ORDER BY time",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "displayName": "${__field.labels.label}",
+          "custom": {
+            "drawStyle": "points",
+            "lineWidth": 1,
+            "spanNulls": true,
+            "showPoints": "always",
+            "pointSize": 3,
+            "fillOpacity": 0,
+            "lineInterpolation": "linear",
+            "axisLabel": "time to first token",
+            "scaleDistribution": {
+              "type": "log",
+              "log": 10
+            }
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 9
+    },
+    {
+      "type": "timeseries",
+      "title": "Every request: end-to-end latency, by arrival time (log scale)",
+      "description": "One dot per request, placed at its scheduled arrival time.",
+      "gridPos": {
+        "x": 12,
+        "y": 27,
+        "w": 12,
+        "h": 9
+      },
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "workload-sim"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "workload-sim"
+          },
+          "queryType": "time series",
+          "queryText": "SELECT time, e2e_ms AS value, label FROM requests JOIN runs USING (run_id) WHERE requests.run_id IN (${run:sqlstring}) AND success ORDER BY time",
+          "rawQueryText": "SELECT time, e2e_ms AS value, label FROM requests JOIN runs USING (run_id) WHERE requests.run_id IN (${run:sqlstring}) AND success ORDER BY time",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "displayName": "${__field.labels.label}",
+          "custom": {
+            "drawStyle": "points",
+            "lineWidth": 1,
+            "spanNulls": true,
+            "showPoints": "always",
+            "pointSize": 3,
+            "fillOpacity": 0,
+            "lineInterpolation": "linear",
+            "axisLabel": "end-to-end latency",
+            "scaleDistribution": {
+              "type": "log",
+              "log": 10
+            }
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 10
+    },
+    {
+      "type": "table",
+      "title": "Selected runs",
+      "description": "",
+      "gridPos": {
+        "x": 0,
+        "y": 36,
+        "w": 24,
+        "h": 6
+      },
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "workload-sim"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "workload-sim"
+          },
+          "queryType": "table",
+          "queryText": "SELECT label AS run, scenario, rate AS [rate (req/s)], rep AS repeat,\n  offered_rps AS [offered (req/s)], steady_requests_per_s AS [completed (req/s)],\n  steady_output_tokens_per_s AS [output (tokens/s)],\n  ttft_p50_ms AS [TTFT p50 (ms)], ttft_p99_ms AS [TTFT p99 (ms)], tpot_p50_ms AS [TPOT p50 (ms/token)],\n  tpot_p99_ms AS [TPOT p99 (ms/token)], e2e_p99_ms AS [E2E p99 (ms)],\n  srv_running_mean AS [batch: mean running (requests)], srv_waiting_mean AS [queue: mean waiting (requests)],\n  srv_kv_cache_usage_mean * 100 AS [KV cache used, mean (%)], srv_queue_mean_ms AS [vLLM queue wait, mean (ms)],\n  srv_preemptions AS [preemptions (count)], successes AS [completed (requests)], requests AS [sent (requests)],\n  run_id, experiment, from_ms, to_ms\nFROM runs WHERE experiment = '$experiment' AND run_id IN (${run:sqlstring}) ORDER BY mode, scenario, rate, rep",
+          "rawQueryText": "SELECT label AS run, scenario, rate AS [rate (req/s)], rep AS repeat,\n  offered_rps AS [offered (req/s)], steady_requests_per_s AS [completed (req/s)],\n  steady_output_tokens_per_s AS [output (tokens/s)],\n  ttft_p50_ms AS [TTFT p50 (ms)], ttft_p99_ms AS [TTFT p99 (ms)], tpot_p50_ms AS [TPOT p50 (ms/token)],\n  tpot_p99_ms AS [TPOT p99 (ms/token)], e2e_p99_ms AS [E2E p99 (ms)],\n  srv_running_mean AS [batch: mean running (requests)], srv_waiting_mean AS [queue: mean waiting (requests)],\n  srv_kv_cache_usage_mean * 100 AS [KV cache used, mean (%)], srv_queue_mean_ms AS [vLLM queue wait, mean (ms)],\n  srv_preemptions AS [preemptions (count)], successes AS [completed (requests)], requests AS [sent (requests)],\n  run_id, experiment, from_ms, to_ms\nFROM runs WHERE experiment = '$experiment' AND run_id IN (${run:sqlstring}) ORDER BY mode, scenario, rate, rep",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "filterable": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rate (req/s)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "offered (req/s)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 154
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "completed (req/s)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 170
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "output (tokens/s)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 170
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "TTFT p50 (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 138
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "TTFT p99 (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 138
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "TPOT p50 (ms/token)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 186
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "TPOT p99 (ms/token)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 186
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "E2E p99 (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "batch: mean running (requests)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 274
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "queue: mean waiting (requests)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 274
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "KV cache used, mean (%)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 218
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vLLM queue wait, mean (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 242
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "preemptions (count)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 186
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "completed (requests)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 194
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sent (requests)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 154
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "run"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 300
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "run_id"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "experiment"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "from_ms"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "to_ms"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "queue: mean waiting (requests)"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 1
+                    },
+                    {
+                      "color": "red",
+                      "value": 5
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "KV cache used, mean (%)"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "orange",
+                      "value": 70
+                    },
+                    {
+                      "color": "red",
+                      "value": 90
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "id": 11
+    }
+  ],
+  "annotations": {
+    "list": []
+  }
+}

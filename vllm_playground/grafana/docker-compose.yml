@@ -1,0 +1,38 @@
+# Local Grafana for workload_sim results. From this folder:
+#   docker compose up            then open http://localhost:3000
+#   docker compose run --rm loader   after adding results, then refresh the browser
+# Reads ../baselines by default; point it elsewhere with RESULTS_DIR=../results docker compose up
+services:
+  loader:
+    # turns the CSV results into one SQLite file (standard library only, no pip install)
+    image: python:3.12.7-slim
+    volumes:
+      - ./load_results.py:/app/load_results.py:ro
+      - ${RESULTS_DIR:-../baselines}:/results:ro
+      - results-db:/data
+    command: ["python", "/app/load_results.py", "/results", "/data/results.db"]
+
+  grafana:
+    image: grafana/grafana:11.6.0
+    depends_on:
+      loader:
+        condition: service_completed_successfully
+    ports:
+      - "127.0.0.1:3000:3000"  # this machine only; nothing is exposed to the network
+    environment:
+      GF_INSTALL_PLUGINS: "frser-sqlite-datasource 3.5.0"
+      # local, single-user: no login, but only reachable from localhost (see ports)
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: "Admin"
+      GF_AUTH_DISABLE_LOGIN_FORM: "true"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/overview.json
+    volumes:
+      - ./provisioning:/etc/grafana/provisioning:ro
+      - ./dashboards:/var/lib/grafana/dashboards:ro
+      - results-db:/data:ro
+      - grafana-state:/var/lib/grafana
+
+volumes:
+  results-db:
+  grafana-state:

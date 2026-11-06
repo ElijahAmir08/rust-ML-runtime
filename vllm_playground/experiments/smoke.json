@@ -1,0 +1,12 @@
+{
+  "description": "Quick end-to-end check (~10 min, 2 GPUs) before a long experiment, e.g. after changing vLLM. Run with --tag <something>.",
+  "seed": 0,
+  "server": {"model": "Qwen/Qwen2.5-7B-Instruct", "max_model_len": 8192, "args": [], "venv": "../vllm/.venv"},
+  "slurm": {"time": "0:45:00"},
+  "runs": [
+    {"name": "scheduler", "mode": "sweep", "scenario": "scheduler",
+     "rates": [2, 6], "repeats": 1, "duration": 30, "warmup": 10},
+    {"name": "replay", "mode": "replay",
+     "start": "2024-05-14 10:00", "hours": 0.25, "speedup": 5, "rate_scale": 0.0019}
+  ]
+}
