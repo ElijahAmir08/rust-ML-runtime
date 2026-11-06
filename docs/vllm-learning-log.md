@@ -110,7 +110,7 @@ Both go through the **same forward pass**.
 
 **Running queue first.** For each request in `running` (walked front → back):
 1. Compute new tokens = `num_tokens − num_computed_tokens`, capped by the token budget and `long_prefill_token_threshold`.
-2. Call[118;1:3u `allocate_slots`. If it fails → **preempt** (see below) and retry.
+2. Call `allocate_slots`. If it fails → **preempt** (see below) and retry.
 3. Subtract from the token budget.
 
 **Then waiting queue** (only if nothing was preempted this step). For each request:
