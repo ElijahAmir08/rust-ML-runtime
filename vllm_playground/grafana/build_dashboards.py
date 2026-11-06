@@ -20,11 +20,12 @@ def target(sql, ref="A", fmt="time series"):
             "timeColumns": ["time"]}
 
 
-def timeseries(title, sql, gp, unit=None, display="${__field.labels.label}", desc="", points=False,
-               min_=None, max_=None, log=False, stack=False):
+def timeseries(title, sql, gp, axis, unit=None, display="${__field.labels.label}", desc="", points=False,
+               min_=None, max_=None, log=False):
+    """Line/point chart against time. `axis` labels the y-axis; the x-axis is always time."""
     custom = {"drawStyle": "points" if points else "line", "lineWidth": 1, "spanNulls": True,
               "showPoints": "never" if not points else "always", "pointSize": 3 if points else 4,
-              "fillOpacity": 0, "lineInterpolation": "linear"}
+              "fillOpacity": 0, "lineInterpolation": "linear", "axisLabel": axis}
     if log:
         custom["scaleDistribution"] = {"type": "log", "log": 10}
     defaults = {"displayName": display, "custom": custom}
@@ -40,13 +41,16 @@ def timeseries(title, sql, gp, unit=None, display="${__field.labels.label}", des
                         "tooltip": {"mode": "multi", "sort": "desc"}}}
 
 
-def barchart(title, sql, gp, unit=None, desc="", log=False, colors=None):
-    custom = {"fillOpacity": 85, "lineWidth": 0}
+def barchart(title, sql, gp, axis, unit=None, desc="", log=False, colors=None):
+    """Bars per offered rate. `axis` labels the y-axis; the x-axis is the offered load."""
+    custom = {"fillOpacity": 85, "lineWidth": 0, "axisLabel": axis}
     if log:
         custom["scaleDistribution"] = {"type": "log", "log": 10}
     overrides = [{"matcher": {"id": "byName", "options": name},
                   "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": c}}]}
                  for name, c in (colors or {}).items()]
+    overrides.append({"matcher": {"id": "byName", "options": "rate"},
+                      "properties": [{"id": "custom.axisLabel", "value": "offered load (requests per second)"}]})
     defaults = {"custom": custom}
     if unit:
         defaults["unit"] = unit
@@ -61,12 +65,12 @@ def barchart(title, sql, gp, unit=None, desc="", log=False, colors=None):
 
 def table(title, sql, gp, link=True, desc=""):
     overrides = []
-    for col, unit, dec in (("offered", "reqps", 2), ("done req/s", "reqps", 2), ("out tok/s", "none", 0),
-                           ("TTFT p50", "ms", 0), ("TTFT p99", "ms", 0), ("TPOT p50", "ms", 1),
-                           ("TPOT p99", "ms", 1), ("E2E p99", "ms", 0), ("batch", "none", 1),
-                           ("queued", "none", 1), ("KV used", "percentunit", 0), ("vLLM queue", "ms", 0)):
+    # the unit is in each header, so cells are plain numbers (no mixing of "596 ms" and "3 mins")
+    for col, dec in TABLE_DECIMALS.items():
         overrides.append({"matcher": {"id": "byName", "options": col},
-                          "properties": [{"id": "unit", "value": unit}, {"id": "decimals", "value": dec}]})
+                          "properties": [{"id": "unit", "value": "none"}, {"id": "decimals", "value": dec},
+                                         # wide enough for the whole header; the table scrolls sideways
+                                         {"id": "custom.minWidth", "value": max(110, 8 * len(col) + 34)}]})
     overrides.append({"matcher": {"id": "byName", "options": "run"},
                       "properties": [{"id": "custom.width", "value": 300}]})
     for col in ("run_id", "experiment", "from_ms", "to_ms"):
@@ -77,8 +81,8 @@ def table(title, sql, gp, link=True, desc=""):
             "title": "Open this run over time",
             "url": "/d/vllm-run/vllm-run-detail?var-experiment=${__data.fields.experiment}"
                    "&var-run=${__data.fields.run_id}&from=${__data.fields.from_ms}&to=${__data.fields.to_ms}"}]}]})
-    for col, steps in (("queued", [("green", None), ("orange", 1), ("red", 5)]),
-                       ("KV used", [("green", None), ("orange", 0.7), ("red", 0.9)])):
+    for col, steps in (("queue: mean waiting (requests)", [("green", None), ("orange", 1), ("red", 5)]),
+                       ("KV cache used, mean (%)", [("green", None), ("orange", 70), ("red", 90)])):
         overrides.append({"matcher": {"id": "byName", "options": col}, "properties": [
             {"id": "custom.cellOptions", "value": {"type": "color-text"}},
             {"id": "thresholds", "value": {"mode": "absolute",
@@ -116,22 +120,32 @@ def dashboard(uid, title, panels, variables, time_from, time_to, desc):
             "templating": {"list": variables}, "panels": panels, "annotations": {"list": []}}
 
 
-RUN_TABLE_SQL = """SELECT label AS run, scenario, rate, rep,
-  offered_rps AS offered, steady_requests_per_s AS [done req/s], steady_output_tokens_per_s AS [out tok/s],
-  ttft_p50_ms AS [TTFT p50], ttft_p99_ms AS [TTFT p99], tpot_p50_ms AS [TPOT p50], tpot_p99_ms AS [TPOT p99],
-  e2e_p99_ms AS [E2E p99], srv_running_mean AS batch, srv_waiting_mean AS queued,
-  srv_kv_cache_usage_mean AS [KV used], srv_queue_mean_ms AS [vLLM queue], srv_preemptions AS preemptions,
-  successes, requests, run_id, experiment, from_ms, to_ms
+RUN_TABLE_SQL = """SELECT label AS run, scenario, rate AS [rate (req/s)], rep AS repeat,
+  offered_rps AS [offered (req/s)], steady_requests_per_s AS [completed (req/s)],
+  steady_output_tokens_per_s AS [output (tokens/s)],
+  ttft_p50_ms AS [TTFT p50 (ms)], ttft_p99_ms AS [TTFT p99 (ms)], tpot_p50_ms AS [TPOT p50 (ms/token)],
+  tpot_p99_ms AS [TPOT p99 (ms/token)], e2e_p99_ms AS [E2E p99 (ms)],
+  srv_running_mean AS [batch: mean running (requests)], srv_waiting_mean AS [queue: mean waiting (requests)],
+  srv_kv_cache_usage_mean * 100 AS [KV cache used, mean (%)], srv_queue_mean_ms AS [vLLM queue wait, mean (ms)],
+  srv_preemptions AS [preemptions (count)], successes AS [completed (requests)], requests AS [sent (requests)],
+  run_id, experiment, from_ms, to_ms
 FROM runs WHERE experiment = '$experiment' {extra} ORDER BY mode, scenario, rate, rep"""
+TABLE_DECIMALS = {
+    "rate (req/s)": 2, "offered (req/s)": 2, "completed (req/s)": 2, "output (tokens/s)": 0,
+    "TTFT p50 (ms)": 0, "TTFT p99 (ms)": 0, "TPOT p50 (ms/token)": 1, "TPOT p99 (ms/token)": 1, "E2E p99 (ms)": 0,
+    "batch: mean running (requests)": 1, "queue: mean waiting (requests)": 1, "KV cache used, mean (%)": 0,
+    "vLLM queue wait, mean (ms)": 0, "preemptions (count)": 0, "completed (requests)": 0, "sent (requests)": 0,
+}
 
 GUIDE = """**How to use.** Each row below is one scenario's rate sweep: bars are the **median over repeats**
 at each offered rate. The table at the bottom lists every run; click a run name to open it in
 **vLLM run detail** and watch load, batch size, queue depth, KV cache and latency change *during* the run.
 Select several runs there to overlay them (sweep runs share an elapsed-time axis: 00:01:30 = 90 s in).
 
-*done req/s* is steady-state throughput (requests finished inside the measured interval / its length);
-when the server keeps up it matches *offered*. *batch* / *queued* / *KV used* are vLLM's own gauges
-(`num_requests_running`, `num_requests_waiting`, `kv_cache_usage_perc`) averaged over the measured interval."""
+Every bar chart: **x-axis = offered load (requests per second)**, y-axis label and unit on each chart.
+*completed* is steady-state throughput (requests finished inside the measured interval ÷ its length); when the
+server keeps up it matches *offered*. Batch / queue / KV cache are vLLM's own gauges (`num_requests_running`,
+`num_requests_waiting`, `kv_cache_usage_perc`), averaged over the measured interval."""
 
 
 def overview():
@@ -140,24 +154,26 @@ def overview():
     panels.append(row("$scenario", y, repeat="scenario"))
     y += 1
     agg = "FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate"
-    rate_lbl = "printf('%g/s', rate) AS rate"
+    rate_lbl = "printf('%g req/s', rate) AS rate"
     panels += [
-        barchart("Throughput: offered vs completed (steady state)",
+        barchart("Throughput: offered vs completed (requests/s)",
                  f"SELECT {rate_lbl}, offered_rps_med AS offered, steady_requests_per_s_med AS completed {agg}",
-                 {"x": 0, "y": y, "w": 6, "h": 8}, unit="reqps",
+                 {"x": 0, "y": y, "w": 6, "h": 8}, "throughput (requests/s)", unit="reqps",
                  colors={"offered": "#94a3b8", "completed": "#2563eb"},
                  desc="If completed < offered, requests pile up in vLLM's queue: the server is past saturation."),
-        barchart("Time to first token", f"SELECT {rate_lbl}, ttft_p50_ms_med AS p50, ttft_p99_ms_med AS p99 {agg}",
-                 {"x": 6, "y": y, "w": 6, "h": 8}, unit="ms", log=True,
+        barchart("Time to first token: p50 and p99 (log scale)",
+                 f"SELECT {rate_lbl}, ttft_p50_ms_med AS p50, ttft_p99_ms_med AS p99 {agg}",
+                 {"x": 6, "y": y, "w": 6, "h": 8}, "time to first token", unit="ms", log=True,
                  colors={"p50": "#60a5fa", "p99": "#1d4ed8"}, desc="Log scale. Includes queueing + prefill."),
-        barchart("Time per output token", f"SELECT {rate_lbl}, tpot_p50_ms_med AS p50, tpot_p99_ms_med AS p99 {agg}",
-                 {"x": 12, "y": y, "w": 6, "h": 8}, unit="ms",
+        barchart("Time per output token: p50, p99 (ms/token)",
+                 f"SELECT {rate_lbl}, tpot_p50_ms_med AS p50, tpot_p99_ms_med AS p99 {agg}",
+                 {"x": 12, "y": y, "w": 6, "h": 8}, "time per output token", unit="ms",
                  colors={"p50": "#5eead4", "p99": "#0f766e"},
                  desc="(e2e - ttft) / (tokens - 1). Grows when prefill chunks share steps with decodes."),
-        barchart("vLLM scheduler state (mean over measured interval)",
+        barchart("vLLM batch and queue: mean number of requests",
                  f"SELECT {rate_lbl}, srv_running_mean_med AS [batch (running)], "
                  f"srv_waiting_mean_med AS [queued (waiting)] {agg}",
-                 {"x": 18, "y": y, "w": 6, "h": 8},
+                 {"x": 18, "y": y, "w": 6, "h": 8}, "requests (count)", unit="none",
                  colors={"batch (running)": "#2563eb", "queued (waiting)": "#be123c"}),
     ]
     y += 8
@@ -186,35 +202,43 @@ def run_detail():
     r = "FROM requests JOIN runs USING (run_id) WHERE " + RUNS.replace("run_id", "requests.run_id")
     two = "${__field.name} · ${__field.labels.label}"
     panels = [
-        text("Selected runs over time. Sweep runs are on an **elapsed-time axis** (00:01:30 = 90 s after the "
-             "first request; the first `warmup` seconds are not in the summaries). The replay is on the "
-             "**trace's own time of day**. Pick several runs in *Run* to overlay them. Drag on any graph to zoom.",
+        text("**x-axis of every chart = time.** Sweep runs: **elapsed time since the run's first request** "
+             "(hh:mm:ss; 00:01:30 = 90 s in; the time picker shows this as 2000-01-01). Replays: the **trace's "
+             "own UTC time of day**. The first `warmup` seconds of a sweep are not in its summaries. Pick several "
+             "runs in *Run* to overlay them; drag on a chart to zoom.",
              {"x": 0, "y": 0, "w": 24, "h": 2}),
-        timeseries("Offered load (arrivals per second)", f"SELECT time, arrivals_per_s AS value, label {w}",
-                   {"x": 0, "y": 2, "w": 12, "h": 8}, unit="reqps",
+        timeseries("Offered load: requests arriving per second", f"SELECT time, arrivals_per_s AS value, label {w}",
+                   {"x": 0, "y": 2, "w": 12, "h": 8}, "arrivals (requests/s)", unit="reqps",
                    desc="Requests arriving in each window (Poisson for sweeps, the real trace for replay)."),
-        timeseries("Completions per second", f"SELECT time, completions_per_s AS value, label {w}",
-                   {"x": 12, "y": 2, "w": 12, "h": 8}, unit="reqps",
+        timeseries("Completions: requests finishing per second", f"SELECT time, completions_per_s AS value, label {w}",
+                   {"x": 12, "y": 2, "w": 12, "h": 8}, "completions (requests/s)", unit="reqps",
                    desc="Requests finishing in each window. Falls behind arrivals when vLLM saturates."),
-        timeseries("vLLM batch size (num_requests_running)", f"SELECT time, running AS value, label {s}",
-                   {"x": 0, "y": 10, "w": 8, "h": 8}, min_=0),
-        timeseries("vLLM queue depth (num_requests_waiting)", f"SELECT time, waiting AS value, label {s}",
-                   {"x": 8, "y": 10, "w": 8, "h": 8}, min_=0,
-                   desc="Requests held in vLLM's scheduler. Growing without bound = overloaded."),
-        timeseries("KV cache used", f"SELECT time, kv_cache_usage AS value, label {s}",
-                   {"x": 16, "y": 10, "w": 8, "h": 8}, unit="percentunit", min_=0, max_=1,
+        timeseries("vLLM batch size: requests running (count)", f"SELECT time, running AS value, label {s}",
+                   {"x": 0, "y": 10, "w": 8, "h": 8}, "requests running", unit="none", min_=0,
+                   desc="vLLM's num_requests_running, sampled every 1 s."),
+        timeseries("vLLM queue depth: requests waiting (count)", f"SELECT time, waiting AS value, label {s}",
+                   {"x": 8, "y": 10, "w": 8, "h": 8}, "requests waiting", unit="none", min_=0,
+                   desc="vLLM's num_requests_waiting, sampled every 1 s: requests held in its scheduler. "
+                        "Growing without bound = overloaded."),
+        timeseries("KV cache used (% of blocks)", f"SELECT time, kv_cache_usage AS value, label {s}",
+                   {"x": 16, "y": 10, "w": 8, "h": 8}, "KV cache used (%)", unit="percentunit", min_=0, max_=1,
                    desc="Fraction of KV-cache blocks in use. Near 100% vLLM preempts running requests."),
-        timeseries("Time to first token (per window, by arrival)",
+        timeseries("Time to first token: p50 and p99 per time window (log scale)",
                    f"SELECT windows.time, windows.ttft_p50_ms AS p50, windows.ttft_p99_ms AS p99, label {w}",
-                   {"x": 0, "y": 18, "w": 12, "h": 9}, unit="ms", display=two, log=True),
-        timeseries("Time per output token (per window, by arrival)",
+                   {"x": 0, "y": 18, "w": 12, "h": 9}, "time to first token", unit="ms", display=two, log=True,
+                   desc="Requests grouped by arrival time into windows (10 s of run time for sweeps)."),
+        timeseries("Time per output token: p50 and p99 per time window (ms per token)",
                    f"SELECT windows.time, windows.tpot_p50_ms AS p50, windows.tpot_p99_ms AS p99, label {w}",
-                   {"x": 12, "y": 18, "w": 12, "h": 9}, unit="ms", display=two),
-        timeseries("Every request: time to first token", f"SELECT time, ttft_ms AS value, label {r} AND success ORDER BY time",
-                   {"x": 0, "y": 27, "w": 12, "h": 9}, unit="ms", points=True, log=True,
-                   desc="One dot per request, at its arrival time."),
-        timeseries("Every request: end-to-end latency", f"SELECT time, e2e_ms AS value, label {r} AND success ORDER BY time",
-                   {"x": 12, "y": 27, "w": 12, "h": 9}, unit="ms", points=True, log=True),
+                   {"x": 12, "y": 18, "w": 12, "h": 9}, "time per output token", unit="ms", display=two,
+                   desc="Requests grouped by arrival time into windows (10 s of run time for sweeps)."),
+        timeseries("Every request: time to first token, by arrival time (log scale)",
+                   f"SELECT time, ttft_ms AS value, label {r} AND success ORDER BY time",
+                   {"x": 0, "y": 27, "w": 12, "h": 9}, "time to first token", unit="ms", points=True, log=True,
+                   desc="One dot per request, placed at its scheduled arrival time."),
+        timeseries("Every request: end-to-end latency, by arrival time (log scale)",
+                   f"SELECT time, e2e_ms AS value, label {r} AND success ORDER BY time",
+                   {"x": 12, "y": 27, "w": 12, "h": 9}, "end-to-end latency", unit="ms", points=True, log=True,
+                   desc="One dot per request, placed at its scheduled arrival time."),
         table("Selected runs", RUN_TABLE_SQL.format(extra="AND " + RUNS), {"x": 0, "y": 36, "w": 24, "h": 6},
               link=False),
     ]

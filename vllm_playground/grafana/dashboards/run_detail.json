@@ -68,13 +68,13 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "Selected runs over time. Sweep runs are on an **elapsed-time axis** (00:01:30 = 90 s after the first request; the first `warmup` seconds are not in the summaries). The replay is on the **trace's own time of day**. Pick several runs in *Run* to overlay them. Drag on any graph to zoom."
+        "content": "**x-axis of every chart = time.** Sweep runs: **elapsed time since the run's first request** (hh:mm:ss; 00:01:30 = 90 s in; the time picker shows this as 2000-01-01). Replays: the **trace's own UTC time of day**. The first `warmup` seconds of a sweep are not in its summaries. Pick several runs in *Run* to overlay them; drag on a chart to zoom."
       },
       "id": 1
     },
     {
       "type": "timeseries",
-      "title": "Offered load (arrivals per second)",
+      "title": "Offered load: requests arriving per second",
       "description": "Requests arriving in each window (Poisson for sweeps, the real trace for replay).",
       "gridPos": {
         "x": 0,
@@ -111,7 +111,8 @@
             "showPoints": "never",
             "pointSize": 4,
             "fillOpacity": 0,
-            "lineInterpolation": "linear"
+            "lineInterpolation": "linear",
+            "axisLabel": "arrivals (requests/s)"
           },
           "unit": "reqps"
         },
@@ -132,7 +133,7 @@
     },
     {
       "type": "timeseries",
-      "title": "Completions per second",
+      "title": "Completions: requests finishing per second",
       "description": "Requests finishing in each window. Falls behind arrivals when vLLM saturates.",
       "gridPos": {
         "x": 12,
@@ -169,7 +170,8 @@
             "showPoints": "never",
             "pointSize": 4,
             "fillOpacity": 0,
-            "lineInterpolation": "linear"
+            "lineInterpolation": "linear",
+            "axisLabel": "completions (requests/s)"
           },
           "unit": "reqps"
         },
@@ -190,8 +192,8 @@
     },
     {
       "type": "timeseries",
-      "title": "vLLM batch size (num_requests_running)",
-      "description": "",
+      "title": "vLLM batch size: requests running (count)",
+      "description": "vLLM's num_requests_running, sampled every 1 s.",
       "gridPos": {
         "x": 0,
         "y": 10,
@@ -227,8 +229,10 @@
             "showPoints": "never",
             "pointSize": 4,
             "fillOpacity": 0,
-            "lineInterpolation": "linear"
+            "lineInterpolation": "linear",
+            "axisLabel": "requests running"
           },
+          "unit": "none",
           "min": 0
         },
         "overrides": []
@@ -248,8 +252,8 @@
     },
     {
       "type": "timeseries",
-      "title": "vLLM queue depth (num_requests_waiting)",
-      "description": "Requests held in vLLM's scheduler. Growing without bound = overloaded.",
+      "title": "vLLM queue depth: requests waiting (count)",
+      "description": "vLLM's num_requests_waiting, sampled every 1 s: requests held in its scheduler. Growing without bound = overloaded.",
       "gridPos": {
         "x": 8,
         "y": 10,
@@ -285,8 +289,10 @@
             "showPoints": "never",
             "pointSize": 4,
             "fillOpacity": 0,
-            "lineInterpolation": "linear"
+            "lineInterpolation": "linear",
+            "axisLabel": "requests waiting"
           },
+          "unit": "none",
           "min": 0
         },
         "overrides": []
@@ -306,7 +312,7 @@
     },
     {
       "type": "timeseries",
-      "title": "KV cache used",
+      "title": "KV cache used (% of blocks)",
       "description": "Fraction of KV-cache blocks in use. Near 100% vLLM preempts running requests.",
       "gridPos": {
         "x": 16,
@@ -343,7 +349,8 @@
             "showPoints": "never",
             "pointSize": 4,
             "fillOpacity": 0,
-            "lineInterpolation": "linear"
+            "lineInterpolation": "linear",
+            "axisLabel": "KV cache used (%)"
           },
           "unit": "percentunit",
           "min": 0,
@@ -366,8 +373,8 @@
     },
     {
       "type": "timeseries",
-      "title": "Time to first token (per window, by arrival)",
-      "description": "",
+      "title": "Time to first token: p50 and p99 per time window (log scale)",
+      "description": "Requests grouped by arrival time into windows (10 s of run time for sweeps).",
       "gridPos": {
         "x": 0,
         "y": 18,
@@ -404,6 +411,7 @@
             "pointSize": 4,
             "fillOpacity": 0,
             "lineInterpolation": "linear",
+            "axisLabel": "time to first token",
             "scaleDistribution": {
               "type": "log",
               "log": 10
@@ -428,8 +436,8 @@
     },
     {
       "type": "timeseries",
-      "title": "Time per output token (per window, by arrival)",
-      "description": "",
+      "title": "Time per output token: p50 and p99 per time window (ms per token)",
+      "description": "Requests grouped by arrival time into windows (10 s of run time for sweeps).",
       "gridPos": {
         "x": 12,
         "y": 18,
@@ -465,7 +473,8 @@
             "showPoints": "never",
             "pointSize": 4,
             "fillOpacity": 0,
-            "lineInterpolation": "linear"
+            "lineInterpolation": "linear",
+            "axisLabel": "time per output token"
           },
           "unit": "ms"
         },
@@ -486,8 +495,8 @@
     },
     {
       "type": "timeseries",
-      "title": "Every request: time to first token",
-      "description": "One dot per request, at its arrival time.",
+      "title": "Every request: time to first token, by arrival time (log scale)",
+      "description": "One dot per request, placed at its scheduled arrival time.",
       "gridPos": {
         "x": 0,
         "y": 27,
@@ -524,6 +533,7 @@
             "pointSize": 3,
             "fillOpacity": 0,
             "lineInterpolation": "linear",
+            "axisLabel": "time to first token",
             "scaleDistribution": {
               "type": "log",
               "log": 10
@@ -548,8 +558,8 @@
     },
     {
       "type": "timeseries",
-      "title": "Every request: end-to-end latency",
-      "description": "",
+      "title": "Every request: end-to-end latency, by arrival time (log scale)",
+      "description": "One dot per request, placed at its scheduled arrival time.",
       "gridPos": {
         "x": 12,
         "y": 27,
@@ -586,6 +596,7 @@
             "pointSize": 3,
             "fillOpacity": 0,
             "lineInterpolation": "linear",
+            "axisLabel": "end-to-end latency",
             "scaleDistribution": {
               "type": "log",
               "log": 10
@@ -630,8 +641,8 @@
             "uid": "workload-sim"
           },
           "queryType": "table",
-          "queryText": "SELECT label AS run, scenario, rate, rep,\n  offered_rps AS offered, steady_requests_per_s AS [done req/s], steady_output_tokens_per_s AS [out tok/s],\n  ttft_p50_ms AS [TTFT p50], ttft_p99_ms AS [TTFT p99], tpot_p50_ms AS [TPOT p50], tpot_p99_ms AS [TPOT p99],\n  e2e_p99_ms AS [E2E p99], srv_running_mean AS batch, srv_waiting_mean AS queued,\n  srv_kv_cache_usage_mean AS [KV used], srv_queue_mean_ms AS [vLLM queue], srv_preemptions AS preemptions,\n  successes, requests, run_id, experiment, from_ms, to_ms\nFROM runs WHERE experiment = '$experiment' AND run_id IN (${run:sqlstring}) ORDER BY mode, scenario, rate, rep",
-          "rawQueryText": "SELECT label AS run, scenario, rate, rep,\n  offered_rps AS offered, steady_requests_per_s AS [done req/s], steady_output_tokens_per_s AS [out tok/s],\n  ttft_p50_ms AS [TTFT p50], ttft_p99_ms AS [TTFT p99], tpot_p50_ms AS [TPOT p50], tpot_p99_ms AS [TPOT p99],\n  e2e_p99_ms AS [E2E p99], srv_running_mean AS batch, srv_waiting_mean AS queued,\n  srv_kv_cache_usage_mean AS [KV used], srv_queue_mean_ms AS [vLLM queue], srv_preemptions AS preemptions,\n  successes, requests, run_id, experiment, from_ms, to_ms\nFROM runs WHERE experiment = '$experiment' AND run_id IN (${run:sqlstring}) ORDER BY mode, scenario, rate, rep",
+          "queryText": "SELECT label AS run, scenario, rate AS [rate (req/s)], rep AS repeat,\n  offered_rps AS [offered (req/s)], steady_requests_per_s AS [completed (req/s)],\n  steady_output_tokens_per_s AS [output (tokens/s)],\n  ttft_p50_ms AS [TTFT p50 (ms)], ttft_p99_ms AS [TTFT p99 (ms)], tpot_p50_ms AS [TPOT p50 (ms/token)],\n  tpot_p99_ms AS [TPOT p99 (ms/token)], e2e_p99_ms AS [E2E p99 (ms)],\n  srv_running_mean AS [batch: mean running (requests)], srv_waiting_mean AS [queue: mean waiting (requests)],\n  srv_kv_cache_usage_mean * 100 AS [KV cache used, mean (%)], srv_queue_mean_ms AS [vLLM queue wait, mean (ms)],\n  srv_preemptions AS [preemptions (count)], successes AS [completed (requests)], requests AS [sent (requests)],\n  run_id, experiment, from_ms, to_ms\nFROM runs WHERE experiment = '$experiment' AND run_id IN (${run:sqlstring}) ORDER BY mode, scenario, rate, rep",
+          "rawQueryText": "SELECT label AS run, scenario, rate AS [rate (req/s)], rep AS repeat,\n  offered_rps AS [offered (req/s)], steady_requests_per_s AS [completed (req/s)],\n  steady_output_tokens_per_s AS [output (tokens/s)],\n  ttft_p50_ms AS [TTFT p50 (ms)], ttft_p99_ms AS [TTFT p99 (ms)], tpot_p50_ms AS [TPOT p50 (ms/token)],\n  tpot_p99_ms AS [TPOT p99 (ms/token)], e2e_p99_ms AS [E2E p99 (ms)],\n  srv_running_mean AS [batch: mean running (requests)], srv_waiting_mean AS [queue: mean waiting (requests)],\n  srv_kv_cache_usage_mean * 100 AS [KV cache used, mean (%)], srv_queue_mean_ms AS [vLLM queue wait, mean (ms)],\n  srv_preemptions AS [preemptions (count)], successes AS [completed (requests)], requests AS [sent (requests)],\n  run_id, experiment, from_ms, to_ms\nFROM runs WHERE experiment = '$experiment' AND run_id IN (${run:sqlstring}) ORDER BY mode, scenario, rate, rep",
           "timeColumns": [
             "time"
           ]
@@ -648,39 +659,67 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "offered"
+              "options": "rate (req/s)"
             },
             "properties": [
               {
                 "id": "unit",
-                "value": "reqps"
+                "value": "none"
               },
               {
                 "id": "decimals",
                 "value": 2
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 130
               }
             ]
           },
           {
             "matcher": {
               "id": "byName",
-              "options": "done req/s"
+              "options": "offered (req/s)"
             },
             "properties": [
               {
                 "id": "unit",
-                "value": "reqps"
+                "value": "none"
               },
               {
                 "id": "decimals",
                 "value": 2
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 154
               }
             ]
           },
           {
             "matcher": {
               "id": "byName",
-              "options": "out tok/s"
+              "options": "completed (req/s)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 170
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "output (tokens/s)"
             },
             "properties": [
               {
@@ -690,93 +729,57 @@
               {
                 "id": "decimals",
                 "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 170
               }
             ]
           },
           {
             "matcher": {
               "id": "byName",
-              "options": "TTFT p50"
+              "options": "TTFT p50 (ms)"
             },
             "properties": [
               {
                 "id": "unit",
-                "value": "ms"
+                "value": "none"
               },
               {
                 "id": "decimals",
                 "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 138
               }
             ]
           },
           {
             "matcher": {
               "id": "byName",
-              "options": "TTFT p99"
+              "options": "TTFT p99 (ms)"
             },
             "properties": [
               {
                 "id": "unit",
-                "value": "ms"
+                "value": "none"
               },
               {
                 "id": "decimals",
                 "value": 0
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "TPOT p50"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "ms"
               },
               {
-                "id": "decimals",
-                "value": 1
+                "id": "custom.minWidth",
+                "value": 138
               }
             ]
           },
           {
             "matcher": {
               "id": "byName",
-              "options": "TPOT p99"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "ms"
-              },
-              {
-                "id": "decimals",
-                "value": 1
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "E2E p99"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "ms"
-              },
-              {
-                "id": "decimals",
-                "value": 0
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "batch"
+              "options": "TPOT p50 (ms/token)"
             },
             "properties": [
               {
@@ -786,13 +789,17 @@
               {
                 "id": "decimals",
                 "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 186
               }
             ]
           },
           {
             "matcher": {
               "id": "byName",
-              "options": "queued"
+              "options": "TPOT p99 (ms/token)"
             },
             "properties": [
               {
@@ -802,38 +809,170 @@
               {
                 "id": "decimals",
                 "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 186
               }
             ]
           },
           {
             "matcher": {
               "id": "byName",
-              "options": "KV used"
+              "options": "E2E p99 (ms)"
             },
             "properties": [
               {
                 "id": "unit",
-                "value": "percentunit"
+                "value": "none"
               },
               {
                 "id": "decimals",
                 "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 130
               }
             ]
           },
           {
             "matcher": {
               "id": "byName",
-              "options": "vLLM queue"
+              "options": "batch: mean running (requests)"
             },
             "properties": [
               {
                 "id": "unit",
-                "value": "ms"
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 274
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "queue: mean waiting (requests)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 274
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "KV cache used, mean (%)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
               },
               {
                 "id": "decimals",
                 "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 218
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vLLM queue wait, mean (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 242
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "preemptions (count)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 186
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "completed (requests)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 194
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sent (requests)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 154
               }
             ]
           },
@@ -900,7 +1039,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "queued"
+              "options": "queue: mean waiting (requests)"
             },
             "properties": [
               {
@@ -934,7 +1073,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "KV used"
+              "options": "KV cache used, mean (%)"
             },
             "properties": [
               {
@@ -954,11 +1093,11 @@
                     },
                     {
                       "color": "orange",
-                      "value": 0.7
+                      "value": 70
                     },
                     {
                       "color": "red",
-                      "value": 0.9
+                      "value": 90
                     }
                   ]
                 }
