@@ -20,7 +20,7 @@ class VLLMClient:
         self.url = base_url.rstrip("/") + "/v1/completions"
         self.model = model
         self.token_ids = range(*token_id_range)
-        self.rng = random.Random(seed)
+        self.seed = seed
         self.session = None
 
     async def __aenter__(self):
@@ -34,9 +34,12 @@ class VLLMClient:
         await self.session.close()
 
     def _payload(self, req: Request) -> dict:
+        # One RNG per request, seeded by (seed, request id): the prompt depends only on the seed,
+        # not on the order in which the event loop happens to start the send() tasks.
+        rng = random.Random(self.seed * 1_000_003 + req.id)
         return {
             "model": self.model,
-            "prompt": self.rng.choices(self.token_ids, k=req.prompt_tokens),
+            "prompt": rng.choices(self.token_ids, k=req.prompt_tokens),
             "max_tokens": req.output_tokens,
             "ignore_eos": True,
             "stream": True,

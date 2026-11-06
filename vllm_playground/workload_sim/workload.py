@@ -36,6 +36,7 @@ class Workload(ABC):
 
     def __init__(self, max_model_len: int, seed: int = 0):
         self.max_model_len = max_model_len
+        self.seed = seed  # also seeds the client's random prompt token ids
         self.rng = np.random.default_rng(seed)
 
     @abstractmethod

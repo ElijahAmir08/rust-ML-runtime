@@ -1,0 +1,22 @@
+{
+  "description": "Stock vLLM (default scheduler) serving Qwen2.5-7B-Instruct fp16 on one V100-32GB: rate sweeps for 3 scenarios + a 6 h trace replay",
+  "notes": "Rate grids come from calibration (results/calib/, 1 repeat x 90 s): each starts well below and ends past the rate where completions stopped keeping up with arrivals (scheduler ~11-12, baseline ~1, kv_cache ~0.2-0.3 req/s). Lower-rate scenarios run longer so each run still has enough requests for tail percentiles. Replay: 2024-05-14 10:00-16:00 UTC, trace load 54 -> 75 (14:00 peak) -> 65 req/s; x6 speedup (1 h run) and rate_scale 0.0019 give ~0.75 req/s average, ~0.86 at the peak. ~8 GPU-hours, ~3.5-4 h wall clock.",
+  "seed": 0,
+  "server": {
+    "model": "Qwen/Qwen2.5-7B-Instruct",
+    "max_model_len": 8192,
+    "args": [],
+    "venv": "../vllm/.venv"
+  },
+  "slurm": {"partition": "gpu", "gpus": 1, "cpus": 8, "mem": "64G", "time": "8:00:00"},
+  "runs": [
+    {"name": "scheduler", "mode": "sweep", "scenario": "scheduler",
+     "rates": [2, 4, 6, 8, 10, 12, 14], "repeats": 3, "duration": 180, "warmup": 45},
+    {"name": "baseline", "mode": "sweep", "scenario": "baseline",
+     "rates": [0.25, 0.5, 0.75, 1, 1.25, 1.5], "repeats": 3, "duration": 300, "warmup": 60},
+    {"name": "kv_cache", "mode": "sweep", "scenario": "kv_cache",
+     "rates": [0.05, 0.1, 0.15, 0.2, 0.3, 0.45], "repeats": 3, "duration": 480, "warmup": 90},
+    {"name": "replay_0514", "mode": "replay",
+     "start": "2024-05-14 10:00", "hours": 6, "speedup": 6, "rate_scale": 0.0019, "repeats": 1}
+  ]
+}

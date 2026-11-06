@@ -15,7 +15,8 @@ class LoadGenerator:
         self.max_lag = 0.0  # worst delay between a request's scheduled and actual send time
 
     async def run(self, requests: list[Request]) -> list[RequestResult]:
-        start = time.monotonic()
+        start = self.start = time.monotonic()  # kept so server samples can be aligned to arrival times
+        self.start_unix = time.time()  # wall clock of t = 0, for provenance and dashboards
         self.max_lag = 0.0
         tasks = []
         for req in requests:

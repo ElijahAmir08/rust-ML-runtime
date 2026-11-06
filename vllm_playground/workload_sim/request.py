@@ -25,3 +25,15 @@ class RequestResult:
     def itls(self) -> list[float]:
         """Inter-token latencies: gaps between consecutive streamed chunks."""
         return [b - a for a, b in zip(self.token_times, self.token_times[1:])]
+
+    @property
+    def tpot(self) -> float | None:
+        """Time per output token after the first: (e2e - ttft) / (output tokens - 1).
+
+        Unlike ITL this is per token even when a chunk carries several tokens. Uses the server's
+        usage count, falling back to the number of chunks if usage wasn't reported.
+        """
+        n = self.received_tokens or len(self.token_times)
+        if not self.success or n < 2:
+            return None
+        return (self.e2e - self.ttft) / (n - 1)
