@@ -75,3 +75,23 @@
         - How does Rust's ownership model affect concurrency and sharing data between threads?
     - Connection to Project:
         - Avoiding unnecessary cloning of large request data or prompt strings could help reduce memory allocation and copying overhead.
+# November 5, 2026
+### What I have accomplished [EH]
+    - Completed chapters 4 through 6 in Rust's documentation, building ontop of the ownership topic from previous log. 
+    - Chapter 4: References, Borrowing, and Slices
+        - Learned the terminology borrowing which is using '&'symbol before a var_name to reference/point to it and not actually take ownership
+        - Mutable references (&mut V) which allows you to modify the value, but with the restriction that there can only be one mutable reference to variable. Versus an immutable reference which there can exist many
+        - Additionally, covered slices which is referencing portion of a collection without taking ownership or copying the entirety of it. String slices (&str) were a good example in the doc to understand this. 
+    - Chapter 5: Structs and Mutables
+        - Learned how structs group related fields into a custom data type, similar in purpose to classes or structures in languages I've used previously
+        - The impl keyword allows defining methods associated with a struct, with &self providing borrowed access to the instance
+        - This also clarified my earlier confusion between :: and . notation. Associated functions can be accessed through the type using ::, while methods operate on a value using dot notation
+        - Important for when representing LLM inference requests, with fields such as request ID, arrival time, and token count
+    - Chapter 6: Enums and Pattern Matching
+        - enums were pretty standard for any other programming language, represent different possible states, including variants that carry associated data
+        - The Option<T> enum was particularly interesting because it explicitly represents whether a value exists through Some(T) or None, rather than relying on null values. Rust has does not have null at all
+        - These concepts should be useful for handling scheduling outcomes, empty request queues, and different request states
+    - Current Observations / Learning Curve:
+        - Rust's syntax is becoming more familiar, although ownership and borrowing require some extra thinking about how data is passed and modified
+        - I like how Rust's type system and compiler make certain assumptions and possible errors explicit
+        - Having completed these chapters, my next goal is to apply these concepts independently rather than only following the documentation
