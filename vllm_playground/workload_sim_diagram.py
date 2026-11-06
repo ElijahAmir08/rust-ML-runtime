@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Diagram of the benchmarking system: how an experiment is launched, what one run of workload_sim
-does, and when every metric is collected.
+does, when every metric is collected, and a key + glossary explaining every part.
 
     python3 workload_sim_diagram.py    # writes workload_sim_diagram.png and .svg next to this file
 
@@ -19,7 +19,7 @@ from matplotlib.patches import Circle, FancyArrowPatch, FancyBboxPatch, Rectangl
 
 OUT = Path(__file__).with_suffix("")
 
-W, H = 232, 268  # canvas units; 10 units = 1 inch, so units are square
+W, H = 232, 362  # canvas units; 10 units = 1 inch, so units are square
 LINE = 1.9  # card body line height
 HDR = 3.6  # card header height
 SANS, MONO = "DejaVu Sans", "DejaVu Sans Mono"
@@ -198,14 +198,55 @@ def legend_row(x, y, items, size=7.8):
 
 
 # ============================================================================= title
-ax = section(268, 12)
+ax = section(362, 12)
 text(4, 7.0, "workload_sim: how an experiment runs, and when every metric is collected", size=17, fontweight="bold")
 text(4, 2.6, "Open-loop benchmarking of vLLM. A JSON config is launched as Slurm jobs; each job serves the model "
      "and runs seeded workloads built from the Azure LLM trace, timing every streamed token and polling vLLM's own "
      "metrics.", size=9.6, color=MUTED)
 
+
+# ============================================================================= key
+ax = section(349, 24)
+panel(4, 1, 224, 22.5, "How to read this diagram")
+ky = [15.4, 11.7, 8.0, 4.3]
+ax.add_patch(FancyBboxPatch((7, ky[0] - 1.6), 9, 3.2, boxstyle="round,pad=0,rounding_size=0.6",
+                            fc=tint(COL["run"], 0.93), ec=COL["run"], lw=1.0, zorder=3))
+ax.add_patch(Rectangle((7, ky[0] + 0.5), 9, 1.1, fc=COL["run"], ec="none", zorder=4))
+text(19, ky[0], "card: one file, script, class or function; its title (monospace) is its name in the code", size=7.8)
+ax.add_patch(FancyBboxPatch((7, ky[1] - 1.5), 9, 3.0, boxstyle="round,pad=0,rounding_size=0.8",
+                            fc=tint(COL["sweep"], 0.975), ec=tint(COL["sweep"], 0.35), lw=1.1, ls=(0, (4, 2.5)), zorder=3))
+text(19, ky[1], "dashed box: a group: where it runs (login / GPU node), a mode (sweep / replay), or a function's scope", size=7.8)
+route([(7, ky[2]), (16, ky[2])], color=INK, lw=1.3)
+text(19, ky[2], "arrow: what moves from one part to the next; its label says what (data, a call, or the next step)", size=7.8)
+ax.add_patch(FancyBboxPatch((7, ky[3] - 1.4), 2.8, 2.8, boxstyle="round,pad=0,rounding_size=0.6", fc=INK, ec="none", zorder=5))
+text(8.4, ky[3], "A", size=8, color="white", fontweight="bold", ha="center")
+ax.add_patch(Circle((13.8, ky[3]), 1.4, fc=COL["sweep"], ec="none", zorder=5))
+text(13.8, ky[3], "2", size=8, color="white", fontweight="bold", ha="center")
+text(19, ky[3], "A–F: sections, top to bottom.   1–5: the steps inside one run, left to right", size=7.8)
+
+text(110, 20.7, "colours", size=8.4, color=MUTED, fontweight="bold")
+for i, (key, label) in enumerate([("launch", "inputs, launch, files written"), ("sweep", "sweep workload (Poisson)"),
+                                  ("replay", "replay workload (real timestamps)"), ("build", "the request list")]):
+    ax.add_patch(Rectangle((110, ky[i] - 0.9), 2.6, 1.8, fc=COL[key], ec="none", zorder=4))
+    text(113.6, ky[i], label, size=7.8)
+for i, (key, label) in enumerate([("run", "sending requests, client-side monitor"),
+                                  ("server", "vLLM server = the system under test"),
+                                  ("measure", "measurements and summaries")]):
+    ax.add_patch(Rectangle((146, ky[i] - 0.9), 2.6, 1.8, fc=COL[key], ec="none", zorder=4))
+    text(149.6, ky[i], label, size=7.8)
+
+text(186, 20.7, "text", size=8.4, color=MUTED, fontweight="bold")
+text(186, ky[0], "name_in_code", size=7.8, family=MONO)
+text(203, ky[0], "= code, file or flag name", size=7.8)
+text(186, ky[1], "key point", size=7.8, color=COL["run"], fontweight="bold")
+text(203, ky[1], "= the important part", size=7.8)
+text(186, ky[2], "side note", size=7.8, color=MUTED, style="italic")
+text(203, ky[2], "= extra detail", size=7.8)
+text(186, ky[3], "→ file.csv", size=7.8)
+text(203, ky[3], "= a file this step writes", size=7.8)
+
 # ============================================================================= A: launch
-ax = section(255, 46)
+ax = section(324, 46)
 heading(42.5, "A", "Launching an experiment",
         "one config file, one command, one Slurm job per entry in \"runs\" (each with its own V100 and vLLM server)")
 
@@ -227,7 +268,8 @@ rsh = card(52, 29, 39, "./run.sh <name>", [
     "*sbatch slurms/_job.slurm, once per run",
     "~--local: run inline · --dry-run: only print",
 ], COL["launch"], size=8.0)
-route([cfg.right(0.5), (rsh.x, cfg.right(0.5)[1])], color=COL["launch"])
+route([cfg.right(0.5), (rsh.x, cfg.right(0.5)[1])], color=COL["launch"], label="reads",
+      label_xy=((cfg.right_x + rsh.x) / 2, cfg.right(0.5)[1] + 1.6))
 text(7, 6.4, "e.g.  ./run.sh baseline_v1   ·   ./run.sh --dry-run baseline_v1   ·   "
      "./run.sh smoke --tag x --only scheduler", size=7.6, color=MUTED, family=MONO)
 
@@ -236,7 +278,7 @@ for k, z in ((2, 0.2), (1, 0.4)):
     ax.add_patch(FancyBboxPatch((100 + 0.9 * k, 2 - 0.9 * k), 128, 31, boxstyle="round,pad=0,rounding_size=1.8",
                                 fc="white", ec=tint(COL["run"], 0.45), lw=1.0, zorder=z))
 job = group(100, 2, 128, 31, "slurms/_job.slurm  ·  GPU node", COL["run"],
-            note="one job per run, all submitted in parallel")
+            note="steps run left to right · one job per run, all submitted in parallel")
 route([rsh.right(0.5), (job.x, rsh.right(0.5)[1])], color=COL["launch"], label="sbatch",
       label_xy=((rsh.right_x + job.x) / 2, rsh.right(0.5)[1] + 1.8))
 
@@ -281,7 +323,7 @@ hbracket(runs_x0, x - 0.04 * scale, jy - 1.6, "one run per rate × repeat, each 
          COL["run"], size=7.4)
 
 # ============================================================================= B: one run
-ax = section(208, 100, ylo=44)
+ax = section(276, 100, ylo=44)
 heading(141.5, "B", "One run inside the job",
         "workload_sim builds a seeded list of requests, sends each at its scheduled time, and measures; "
         "the job repeats this for every rate × repeat")
@@ -357,12 +399,27 @@ rw = card(ix, lt_r.y - 3, iw, "ReplayWorkload(window)", [
     "lengths: each kept row's own token counts",
 ], COL["replay"])
 
-for a, b, key in ((lt_s, sr, "sweep"), (sr, pw, "sweep"), (lt_r, rw, "replay")):
-    route([a.bc(), b.tc()], color=COL[key], lw=1.3)
+for a, b, key, lbl in ((lt_s, sr, "sweep", "token lengths of every trace row"),
+                       (sr, pw, "sweep", "only this scenario's rows"),
+                       (lt_r, rw, "replay", "window rows, with timestamps")):
+    route([a.bc(), b.tc()], color=COL[key], lw=1.3, label=lbl, label_xy=(a.bc()[0] + 1.2, (a.y + b.top) / 2),
+          label_ha="left", label_size=7.0)
 
-route([trace.right(0.55), (lt_s.x, trace.right(0.55)[1])], color=COL["inputs"])
+route([trace.right(0.55), (lt_s.x, trace.right(0.55)[1])], color=COL["inputs"], label="CSV",
+      label_xy=((trace.right_x + lt_s.x) / 2, trace.right(0.55)[1] + 1.5), label_size=7.0)
+# the workload command chooses the lane (sweep or replay) and gives it its parameters
+cy = cmd.right(0.5)[1]
+HOP = 0.9  # gap left in a line where another line crosses it
 fork_y = trace.right(0.25)[1]
-route([trace.right(0.25), (43.5, fork_y), (43.5, lt_r.left()[1]), lt_r.left()], color=COL["inputs"])
+route([trace.right(0.25), (43.5, fork_y), (43.5, cy + HOP)], color=COL["inputs"], head=False)
+route([(43.5, cy - HOP), (43.5, lt_r.left()[1]), lt_r.left()], color=COL["inputs"])
+text(42.6, (fork_y + cy) / 2 + 2, "CSV", size=7.0, color=COL["inputs"], rotation=90, ha="center")
+route([cmd.right(0.5), (45.6, cy), (45.6, pw.left()[1]), pw.left()], color=COL["inputs"])
+route([(45.6, cy), (45.6, lt_r.left()[1] + HOP)], color=COL["inputs"], head=False)
+route([(45.6, lt_r.left()[1] - HOP), (45.6, rw.left()[1]), rw.left()], color=COL["inputs"])
+# in the gap between the two vertical lines, between the command's arrow and the replay fork
+text(44.55, (cy + lt_r.left()[1]) / 2, "mode + parameters", size=6.6, color=COL["inputs"], rotation=90,
+     ha="center")
 
 # ----------------------------------------------------------------------------- 3 run
 jx, jw = C3[0] + 2, C3[1] - 4
@@ -406,8 +463,10 @@ route([rw.right(), (bus_x, rw.right()[1]), (bus_x, bld.left()[1]), bld.left()], 
 ax.plot([bus_x, bus_x], [rw.right()[1], pw.right()[1]], color=COL["replay"], lw=1.4, zorder=5)
 dot(bus_x, pw.right()[1], COL["build"])
 text(bus_x - 0.8, bld.left()[1] + 1.9, "requests()", size=7.4, color=COL["build"], family=MONO, ha="center")
+text(bus_x + 1.3, (rw.right()[1] + pw.right()[1]) / 2, "arrival times + token lengths", size=6.8,
+     color=COL["build"], rotation=90, ha="center")
 
-route([bld.bc(), lg.tc()], color=COL["run"], label="list[Request]", label_xy=(lg.tc()[0] + 1.2, (bld.y + lg.top) / 2),
+route([bld.bc(), lg.tc()], color=COL["run"], label="list[Request], in arrival order", label_xy=(lg.tc()[0] + 1.2, (bld.y + lg.top) / 2),
       label_ha="left", label_color=COL["build"])
 route([lg.bc(), vc.tc()], color=COL["run"], label="one asyncio task per request",
       label_xy=(lg.tc()[0] + 1.2, (lg.y + vc.top) / 2), label_ha="left")
@@ -432,7 +491,7 @@ mon = card(C4[0], srv.y - 3.6, C4[1], "ServerMonitor", [
     "*→ srv_* metrics, _server.csv",
 ], COL["run"], sub="client side")
 route([srv.bc(), mon.tc()], color=COL["run"])
-text(srv.bc()[0] + 1.0, (srv.y + mon.top) / 2, "scrape", size=7.0, color=COL["run"], style="italic")
+text(srv.bc()[0] + 1.0, (srv.y + mon.top) / 2, "GET /metrics every 1 s", size=7.0, color=COL["run"])
 gy = srv.top - HDR - 1.3 - LINE * 2
 for row, (label, n, fill) in enumerate((("waiting", 6, tint(COL["server"], 0.6)), ("running", 4, COL["server"]))):
     yy = gy - 2.2 - row * 5.2
@@ -447,10 +506,10 @@ for row, (label, n, fill) in enumerate((("waiting", 6, tint(COL["server"], 0.6))
         text(srv.x + 9.6 + n * 2.9 + 0.2, yy, "→ GPU", size=7.4, color=MUTED)
 
 req_y, resp_y = vc.y + vc.h * 0.62, vc.y + vc.h * 0.38
-route([(vc.right_x, req_y), (srv.x, req_y)], color=COL["server"], label="HTTP POST",
-      label_xy=((vc.right_x + srv.x) / 2, req_y + 1.6))
-route([(srv.x, resp_y), (vc.right_x, resp_y)], color=COL["server"], label="SSE stream",
-      label_xy=((vc.right_x + srv.x) / 2, resp_y - 1.6))
+route([(vc.right_x, req_y), (srv.x, req_y)], color=COL["server"], label="request:\nprompt ids",
+      label_xy=((vc.right_x + srv.x) / 2, req_y + 2.4), label_size=7.0)
+route([(srv.x, resp_y), (vc.right_x, resp_y)], color=COL["server"], label="streamed\ntokens (SSE)",
+      label_xy=((vc.right_x + srv.x) / 2, resp_y - 2.4), label_size=7.0)
 
 # ----------------------------------------------------------------------------- 5 measure
 rr = card(C5[0], 123, C5[1], "RequestResult", [
@@ -492,12 +551,13 @@ route([rr.bc(), rm.tc()], color=COL["measure"], label="list[RequestResult]",
       label_xy=(rr.bc()[0] + 1.2, (rr.y + rm.top) / 2), label_ha="left", label_color=COL["measure"])
 mx = (mon.right_x + rm.x) / 2
 route([mon.right(0.35), (mx, mon.right(0.35)[1]), (mx, rm.left(0.3)[1]), rm.left(0.3)], color=COL["run"])
-text(mx - 0.7, mon.right(0.35)[1] + 6, "srv_*", size=7.0, color=COL["run"], family=MONO, rotation=90, ha="center")
-route([rm.bc(), res.tc()], color=COL["outputs"], label="report(): to_csv() + summary()",
+text(mx - 0.9, (mon.right(0.35)[1] + rm.left(0.3)[1]) / 2, "server metrics (srv_*)", size=6.8, color=COL["run"],
+     rotation=90, ha="center")
+route([rm.bc(), res.tc()], color=COL["outputs"], label="report(): CSVs + summary row",
       label_xy=(rm.bc()[0] + 1.2, (rm.y + res.top) / 2), label_ha="left")
 
 # ============================================================================= C: metric timeline
-ax = section(106, 60)
+ax = section(174, 60)
 teal, red = COL["run"], COL["measure"]
 panel(4, 1, 224, 56.5, "")
 heading(54.0, "C", "When metrics are collected during one run",
@@ -558,6 +618,8 @@ ax.plot([tx(SNAP0), tx(END)], [g0, g0], color=tint(teal, 0.3), lw=0.8, zorder=2)
 text(6.5, 32.6, "ServerMonitor gauges", size=8.6, color=teal, fontweight="bold")
 text(6.5, 30.4, "GET /metrics every 1 s: running, waiting,", size=7.8)
 text(6.5, 28.3, "kv_cache_usage → _rep{i}_server.csv", size=7.8)
+text(tx(END) + 1.6, g0 + 0.9, "bar height = requests in flight at that sample (illustrative)", size=7.0,
+     color=MUTED, style="italic", ha="left")
 
 # lane: counter snapshots
 s0 = 24.6
@@ -610,7 +672,7 @@ for k, (xa, xb, lbl) in enumerate(wins):
          ha="left", va="center")
 
 # ============================================================================= D: one request + outputs
-ax = section(45, 44)
+ax = section(112, 44)
 P2 = (4, 1, 109, 42)
 panel(*P2, "D   One request: what VLLMClient.send() measures",
       "all times are seconds after the request's scheduled arrival (due), not after it was actually sent")
@@ -673,7 +735,69 @@ for when, where, what in rows:
         text(x0 + 24, ry - 2.1 * j, line, size=7.6)
     ry -= 2.1 * max(len(what), 2 if where else 1) + 1.6
 
+
+# ============================================================================= F: glossary
+import textwrap  # noqa: E402
+
+ax = section(67, 66)
+panel(4, 1, 224, 64.5, "F   Glossary", "every term used above")
+GLOSS = [
+    [  # setup and workload
+        ("experiment", "A JSON file in experiments/. Each entry in its \"runs\" list becomes one Slurm job."),
+        ("run", "One workload at one rate and one repeat (sweep), or one repeat of a replay. A job does many runs."),
+        ("open loop", "Requests are sent at their scheduled times whether or not earlier ones have finished, so any queueing happens inside vLLM, not in the client."),
+        ("sweep", "Runs at several fixed average rates, with Poisson arrivals and request lengths sampled from the trace."),
+        ("scenario", "Which trace rows give the request lengths: baseline = all rows, scheduler = prompts ≤ 512 tokens, kv_cache = prompts ≥ 3072 tokens."),
+        ("rate", "Average number of requests arriving per second in a sweep (req/s)."),
+        ("Poisson arrivals", "Independent arrivals: the gaps between requests are random, exponentially distributed with mean 1 / rate."),
+        ("replay", "Sends requests at the trace's real timestamps for a time window. speedup compresses time (×6: 6 h in 1 h); rate_scale keeps that random fraction of the rows."),
+        ("repeat / seed", "Repeat i of a run uses seed + i. The seed fixes arrival times, lengths, which replay rows are kept, and prompt tokens."),
+        ("prompt / output tokens", "Lengths from the trace. Prompts are random token ids (no real text); ignore_eos makes vLLM generate exactly the output length."),
+        ("max_model_len", "Longest request vLLM accepts (prompt + output = 8192 tokens). Longer trace rows are clipped to fit."),
+    ],
+    [  # timing and metrics
+        ("priming", "60 s at the highest rate when a job starts, not measured. Absorbs one-time GPU kernel compiles."),
+        ("warmup", "First seconds of a sweep run. Requests arriving then are left out of the latency statistics."),
+        ("duration", "Seconds after warmup during which requests keep arriving: the measured interval."),
+        ("drain", "After arrivals stop, until the last request finishes."),
+        ("cooldown", "5 s idle between runs, so vLLM is empty when the next run starts."),
+        ("streamed chunk", "One SSE message from vLLM with newly generated text, usually one token."),
+        ("TTFT", "Time to first token: scheduled arrival → first chunk. Includes queueing and prefill."),
+        ("TPOT", "Time per output token after the first: (E2E − TTFT) / (output tokens − 1)."),
+        ("ITL", "Inter-token latency: the gap between two consecutive chunks."),
+        ("E2E", "End-to-end latency: scheduled arrival → last chunk."),
+        ("client lag", "How late the client actually sent a request. It counts toward TTFT and E2E; a warning prints above 100 ms."),
+        ("p50 … p99", "Percentiles: p99 = 99% of values are at or below it (the tail). p50 is the median."),
+        ("offered load", "The arrival rate actually generated (req/s)."),
+        ("steady-state throughput", "Requests (and tokens) finished inside the measured interval ÷ its length. Equals the offered load while vLLM keeps up."),
+    ],
+    [  # vLLM and server-side metrics
+        ("prefill", "Processing a request's prompt to build its KV cache; it produces the first token."),
+        ("decode", "Generating output tokens: one token per step for every running request."),
+        ("batch (running)", "Requests vLLM is working on in the current step (num_requests_running)."),
+        ("queue (waiting)", "Requests vLLM has accepted but not started yet (num_requests_waiting)."),
+        ("KV cache", "GPU memory holding each running request's attention keys and values. Usage = fraction of its blocks in use."),
+        ("chunked prefill", "vLLM splits long prompts into pieces (2048 tokens per step) and mixes them into steps with decodes."),
+        ("preemption", "When the KV cache is full, vLLM evicts a running request and recomputes it later."),
+        ("prefix cache", "Reuses KV for prompts that start identically. About 0 here, because prompts are random."),
+        ("/metrics", "vLLM's Prometheus endpoint: plain text with its gauges, counters and histograms."),
+        ("gauge / counter", "Gauge: a current value, sampled every 1 s. Counter / histogram: running totals, read at start and end and subtracted."),
+        ("srv_*", "Summary columns computed from vLLM's /metrics, as opposed to the client's own timestamps."),
+        ("SSE", "Server-sent events: the streaming HTTP response that vLLM sends tokens over."),
+        ("Slurm job", "A batch job on the cluster, submitted with sbatch. Here: one GPU running one vLLM server for one entry in \"runs\"."),
+        ("V100 / fp16", "The cluster's GPU (32 GB). It has no bf16 support, so the model runs in 16-bit floating point (fp16)."),
+    ],
+]
+for (x0c, x1c), entries in zip(((7, 80), (82, 155), (157, 227)), GLOSS):
+    y = 56.4
+    for term, definition in entries:
+        text(x0c, y, term, size=7.8, fontweight="bold")
+        lines = textwrap.wrap(definition, width=int((x1c - x0c - 21) / 0.585))
+        for j, ln in enumerate(lines):
+            text(x0c + 21, y - 1.95 * j, ln, size=7.5)
+        y -= 1.95 * len(lines) + 1.05
+
 # ----------------------------------------------------------------------------- save
 for ext in ("png", "svg"):
-    fig.savefig(OUT.with_suffix(f".{ext}"), dpi=170 if ext == "png" else None, facecolor="white")
+    fig.savefig(OUT.with_suffix(f".{ext}"), dpi=150 if ext == "png" else None, facecolor="white")
 print(f"wrote {OUT.with_suffix('.png')} and .svg")
