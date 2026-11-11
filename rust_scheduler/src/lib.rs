@@ -2,6 +2,16 @@ use std::collections::VecDeque;
 #[derive(Debug)]
 pub struct Request {
     pub id: u64,
+    pub arrival_ms: u64,
+    pub duration_ms: u64,
+}
+// Structure to represent the process results of a request
+#[derive(Debug)]
+pub struct ScheduleRecord {
+    pub id: u64,
+    pub start_ms: u64,
+    pub finish_ms: u64,
+    pub wait_ms: u64,
 }
 pub struct RequestQueue{
     //Implementing queue with a double-ended queue (VecDequeue) for FIFO (Enter through the tail and leave the front)
@@ -31,6 +41,28 @@ impl RequestQueue {
     }
 }
 
+//simulate_fifo function to return a collection of request's processing results
+pub fn simulate_fifo(queue: &mut RequestQueue) -> Vec<ScheduleRecord> {
+
+    let mut now_ms = 0;
+    let mut records = Vec::new();
+    // While dequeuing returns a request calculate times
+    while let Some(request) = queue.dequeue() {
+        let start_ms = now_ms.max(request.arrival_ms);
+        let finish_ms = start_ms + request.duration_ms;
+        let wait_ms = start_ms - request.arrival_ms;
+        //Record the results
+        records.push(ScheduleRecord {
+            id: request.id,
+            start_ms,
+            finish_ms,
+            wait_ms,
+        });
+        now_ms = finish_ms;
+    }
+    records
+}
+
 // Add a test module to test the RequestQueue implementation
 #[cfg(test)] //Compile this module when running tests
 mod tests { //Creates module containing the tests
@@ -40,9 +72,9 @@ mod tests { //Creates module containing the tests
     fn test_fifo_order() {
         let mut queue = RequestQueue::new();
 
-        queue.enqueue(Request { id: 1 });
-        queue.enqueue(Request { id: 2 });
-        queue.enqueue(Request { id: 3 });
+        queue.enqueue(Request { id: 1, arrival_ms: 0, duration_ms: 50});
+        queue.enqueue(Request { id: 2, arrival_ms: 3, duration_ms: 60 });
+        queue.enqueue(Request { id: 3, arrival_ms: 5, duration_ms: 66 });
 
         assert_eq!(queue.len(), 3);
         
