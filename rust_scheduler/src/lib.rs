@@ -1,3 +1,8 @@
+
+/* 
+This file may be used via PyO3 to replace request_queue.py in vLLM.
+
+*/
 use std::collections::VecDeque;
 #[derive(Debug)]
 pub struct Request {
@@ -27,11 +32,13 @@ impl RequestQueue {
     }
     // Adds a request to the queue (back of the queue)
     // Borrows mutable reference to self so that the queue can be modified, and moves request into the queue 
+    //enqueue is the equivalent as add_request()
     pub fn enqueue(&mut self, request: Request) {
         self.pending_requests.push_back(request);
     }
     // Removes the oldest request 
     // Returns None if the queue is empty (via the Option type)
+    //enqueue is the equivalent as pop_request()
     pub fn dequeue(&mut self) -> Option<Request> {
         self.pending_requests.pop_front()
     }

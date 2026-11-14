@@ -95,3 +95,25 @@
         - Rust's syntax is becoming more familiar, although ownership and borrowing require some extra thinking about how data is passed and modified
         - I like how Rust's type system and compiler make certain assumptions and possible errors explicit
         - Having completed these chapters, my next goal is to apply these concepts independently rather than only following the documentation
+
+### November 13th, 2026
+### What I have accomplished [EH]
+    - Began working on integrating Rust with Python using PyO3, which is an important tool for our goal of replacing a CPU-side component of vLLM with a Rust implementation
+    - First, I was able to initialize Victor's vLLM git module and verify that the files are accessible for me. I located the FCFSRequestQueue py file, which is a high contender for what we will replace
+        - Wrote a python benchmark for this existing queue to create a baseline before comparing to Rust
+        - However, I was unable to run the benchmark locally due to additional vLLM modules and dependencies. The first missing one was pybase64. Rather than attempting to install the entire environment, I figured it is easiest for Victor to run it
+    - Began experimenting/setting up PyO3 and Maturin:
+        - PyO3 in short is a Rust library that allows Rust code to interact with Python, including exposing Rust functions that can be called directly from Python.
+        - Maturin is a build tool that compiles Rust code into a Python extension and installs it into a Python environment
+        - I created a seperate ffi_probe directory to experiment with the interface before applying to the main project.
+        - Some new syntax:
+            - #[pymodule]/#[pyfunction] tells PyO3 to expose the Rust module/function to Python
+            - Vec<u64> as explored in a previous log is a Rust vector containing unsigned integers. PyO3 can construct this from a Python list of valid integers
+    - Challenges/Further Exploration:
+        - Understand how PyO3 converts Python objects into Rust types and whether certain logic will introduce more overhead than others
+        - Determine if calling Rust is actually faster after accounting for the cost of crossing Python/Rust
+        
+    - Connection to Project:
+        - This is the first step toward connecting my Rust queue implementation to Python, which will eventually allow us to evaluate whether Rust can replace an existing component of vLLM
+        - The next step is to verify the Python-to-Rust function calls, introduce basic correctness tests, and measure the overhead of PyO3 before attempting to integrate the actual request queue
+        - 
