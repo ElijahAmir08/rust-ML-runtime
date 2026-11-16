@@ -117,3 +117,23 @@
         - This is the first step toward connecting my Rust queue implementation to Python, which will eventually allow us to evaluate whether Rust can replace an existing component of vLLM
         - The next step is to verify the Python-to-Rust function calls, introduce basic correctness tests, and measure the overhead of PyO3 before attempting to integrate the actual request queue
         - 
+# November 15th
+### What I have accomplished [EH]
+    - Continued experimenting with PyO3, this time focusing on the overhead of calling Rust functions from Python and passing data between the two languages
+    - Added a simple ping() function in Rust to measure the cost of calling a function through PyO3 without any args
+        - Used Python's timeit.repeat() to benchmark both a regular Python function and Rust function
+        - Ran each experiment multiple times and used the median result to compare
+        - The Python function averaged 27.6 ns/call compared to 38.5 ns/call for the Rust function through PyO3
+        - Due to the functions using different calling mechamisms this is not exactly 10.9 ns of overhead
+    - Expanded the experiments to measure cost of passing Python lists containing 0, 10, and 1000 request IDs and returning the length
+        - Originally I created lists inside the functions being benchmarks, but realized this would accrue costs for creating the lists. Which is why they are moved outside of the functions
+        - Rust function accepts a Vec<u64> and returns the length. Although .len() is an O(1) operation, PyO3 must convert the Python list into a Rust vector before execution
+        - For 1000 IDs, the Rust call took approximately 13,777 ns compared to 51.2 ns for Python's len()
+        
+    - Began looking into how to expose the existing Rust RequestQueue to Python rather than implementing a separate queue.
+        - Learned about #[pyclass] & #[pymethods] to expose Rust code
+        
+    - Challenges: 
+        - These experiments demonstrate why the interface between Python and Rust is important when considering replacing CPU-side components of vLLM
+        - I will continue to expose the existing Rust queue through PyO3 and benchmark its operations. As well as exploring any other strategies. However, for something like vLLM it does not seem likely that a Rust replacement in this form will show many improvements. 
+        
