@@ -43,7 +43,7 @@ impl RequestQueue {
         self.pending_requests.pop_front()
     }
     // Returns the number of requests in the queue
-    pub fn len(&mut self) -> usize {
+    pub fn len(&self) -> usize {
         self.pending_requests.len()
     }
 }
