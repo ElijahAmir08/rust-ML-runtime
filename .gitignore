@@ -1,4 +1,11 @@
 # Cargo Compilation Output
 target/
-target/vllm_playground/AzureLLMInferenceTrace_conv_1week.csv
+
+# Python environments and caches
+.venv/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+
+# Downloaded workload trace
 vllm_playground/AzureLLMInferenceTrace_conv_1week.csv

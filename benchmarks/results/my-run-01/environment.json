@@ -1,0 +1,1599 @@
+{
+  "started_utc": "2026-11-18T06:57:13.162706+00:00",
+  "command": [
+    "C:\\Users\\mitch\\Desktop\\RuntimeSys\\rust-ML-runtime\\ffi_probe\\.venv\\Scripts\\python.exe",
+    "benchmarks/benchmark_local_queue.py",
+    "--output",
+    "benchmarks/results/my-run-01"
+  ],
+  "parameters": {
+    "sizes": [
+      100,
+      1000,
+      10000,
+      100000
+    ],
+    "batch_sizes": [
+      1,
+      8,
+      64,
+      256,
+      1024
+    ],
+    "warmups": 2,
+    "trials": 9,
+    "min_phase_ms": 5.0,
+    "seed": 263,
+    "output": "benchmarks/results/my-run-01",
+    "release_library": "C:\\Users\\mitch\\Desktop\\RuntimeSys\\rust-ML-runtime\\target\\ffi-probe\\release\\ffi_probe.dll"
+  },
+  "python": "3.14.3 (tags/v3.14.3:323c59a, Feb  3 2026, 16:04:56) [MSC v.1944 64 bit (AMD64)]",
+  "python_executable": "C:\\Users\\mitch\\Desktop\\RuntimeSys\\rust-ML-runtime\\ffi_probe\\.venv\\Scripts\\python.exe",
+  "python_implementation": "CPython",
+  "gil_enabled": true,
+  "os": "Windows-11-10.0.26200-SP0",
+  "machine": "AMD64",
+  "processor": "Intel64 Family 6 Model 158 Stepping 12, GenuineIntel",
+  "cpu_model": "Intel(R) Core(TM) i9-9900K CPU @ 3.60GHz",
+  "logical_cpus": 16,
+  "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)\nbinary: rustc\ncommit-hash: 58cf8f9c35b355199727627d07ae34a4e2846d67\ncommit-date: 2026-10-13\nhost: x86_64-pc-windows-msvc\nrelease: 1.99.1\nLLVM version: 23.1.1",
+  "cargo": "cargo 1.99.1 (5f94df478 2026-08-27)",
+  "maturin": "1.16.0",
+  "git_head": null,
+  "git_status": null,
+  "clock": {
+    "implementation": "QueryPerformanceCounter()",
+    "resolution_seconds": 1e-07,
+    "monotonic": true,
+    "adjustable": false
+  },
+  "gc_policy": "Cyclic GC disabled during samples; reference counting remains active",
+  "build_profile": "release (loaded extension hash matches supplied release artifact)",
+  "extension_path": "C:\\Users\\mitch\\Desktop\\RuntimeSys\\rust-ML-runtime\\ffi_probe\\.venv\\Lib\\site-packages\\ffi_probe\\ffi_probe.cp314-win_amd64.pyd",
+  "release_library": "C:\\Users\\mitch\\Desktop\\RuntimeSys\\rust-ML-runtime\\target\\ffi-probe\\release\\ffi_probe.dll",
+  "extension_sha256": "091690765f9e487a10bed70f6b8739a819433d3724f82f1f6cbdd32c71d76898",
+  "release_library_sha256": "091690765f9e487a10bed70f6b8739a819433d3724f82f1f6cbdd32c71d76898",
+  "build_environment": {
+    "RUSTFLAGS": null,
+    "CARGO_ENCODED_RUSTFLAGS": null,
+    "CARGO_PROFILE_RELEASE_OPT_LEVEL": null,
+    "CARGO_PROFILE_RELEASE_DEBUG": null,
+    "PYO3_PYTHON": null,
+    "PYTHONHASHSEED": null
+  },
+  "source_sha256": {
+    "rust_scheduler/src/lib.rs": "764a34a1020d364277838dd39914570d1f93a4fd61287e3a8bcfeb1ee5c77049",
+    "rust_scheduler/Cargo.toml": "3b6ce30ee667c0c519a05a110827f6ceaf98f309df637895dc3b540ad6e44b91",
+    "ffi_probe/src/lib.rs": "ba81554fc5a25c7408d904ce249f771d68dc559e91d93a6ad5e94cbce2a9e738",
+    "ffi_probe/Cargo.toml": "72c7a85a274b5ffa8fb31954f4ae6a04d441077d5356da5448bff5c1ddd9f58d",
+    "ffi_probe/Cargo.lock": "fadbbe51f20c30ec6307353a37a89df481fc49e1e8e3416e32cdad5cea361c83",
+    "ffi_probe/pyproject.toml": "820ba562d4a021739a4cb412de925cd302c389859a085f77d1e09a6566994a24",
+    "ffi_probe/tests/test_queue.py": "aa8647f7fd5a2732acc2855563441bf63f4dc434da889b0b80a379f090b53a19",
+    "benchmarks/benchmark_local_queue.py": "6c3137ee52cab72a5b221368c9d8aa488e5f28f9feadece3a2d49e825c48ed27",
+    "benchmarks/tests/test_local_queue.py": "f11f5d07a6a662aa5507ec7e22d8f080446b43d109595f08f2b4c66fbb084342"
+  },
+  "calibration": [
+    {
+      "case": [
+        100,
+        "deque_single",
+        1,
+        "individual"
+      ],
+      "enqueue_ns": 7700,
+      "dequeue_ns": 12200,
+      "cycles": 650
+    },
+    {
+      "case": [
+        100,
+        "deque_copy_single",
+        1,
+        "individual"
+      ],
+      "enqueue_ns": 42000,
+      "dequeue_ns": 34700,
+      "cycles": 145
+    },
+    {
+      "case": [
+        100,
+        "rust_single",
+        1,
+        "individual"
+      ],
+      "enqueue_ns": 44500,
+      "dequeue_ns": 36000,
+      "cycles": 139
+    },
+    {
+      "case": [
+        100,
+        "deque_batch",
+        1,
+        "prepared"
+      ],
+      "enqueue_ns": 29000,
+      "dequeue_ns": 36100,
+      "cycles": 173
+    },
+    {
+      "case": [
+        100,
+        "deque_copy_batch",
+        1,
+        "prepared"
+      ],
+      "enqueue_ns": 17700,
+      "dequeue_ns": 29400,
+      "cycles": 283
+    },
+    {
+      "case": [
+        100,
+        "rust_batch",
+        1,
+        "prepared"
+      ],
+      "enqueue_ns": 26800,
+      "dequeue_ns": 82200,
+      "cycles": 187
+    },
+    {
+      "case": [
+        100,
+        "deque_batch",
+        1,
+        "sliced"
+      ],
+      "enqueue_ns": 49500,
+      "dequeue_ns": 26800,
+      "cycles": 187
+    },
+    {
+      "case": [
+        100,
+        "deque_copy_batch",
+        1,
+        "sliced"
+      ],
+      "enqueue_ns": 42200,
+      "dequeue_ns": 89600,
+      "cycles": 119
+    },
+    {
+      "case": [
+        100,
+        "rust_batch",
+        1,
+        "sliced"
+      ],
+      "enqueue_ns": 46400,
+      "dequeue_ns": 27700,
+      "cycles": 181
+    },
+    {
+      "case": [
+        100,
+        "deque_batch",
+        8,
+        "prepared"
+      ],
+      "enqueue_ns": 2600,
+      "dequeue_ns": 9500,
+      "cycles": 1924
+    },
+    {
+      "case": [
+        100,
+        "deque_copy_batch",
+        8,
+        "prepared"
+      ],
+      "enqueue_ns": 7500,
+      "dequeue_ns": 12100,
+      "cycles": 667
+    },
+    {
+      "case": [
+        100,
+        "rust_batch",
+        8,
+        "prepared"
+      ],
+      "enqueue_ns": 6900,
+      "dequeue_ns": 8300,
+      "cycles": 725
+    },
+    {
+      "case": [
+        100,
+        "deque_batch",
+        8,
+        "sliced"
+      ],
+      "enqueue_ns": 3400,
+      "dequeue_ns": 7100,
+      "cycles": 1471
+    },
+    {
+      "case": [
+        100,
+        "deque_copy_batch",
+        8,
+        "sliced"
+      ],
+      "enqueue_ns": 8300,
+      "dequeue_ns": 11300,
+      "cycles": 603
+    },
+    {
+      "case": [
+        100,
+        "rust_batch",
+        8,
+        "sliced"
+      ],
+      "enqueue_ns": 7800,
+      "dequeue_ns": 8200,
+      "cycles": 642
+    },
+    {
+      "case": [
+        100,
+        "deque_batch",
+        64,
+        "prepared"
+      ],
+      "enqueue_ns": 1400,
+      "dequeue_ns": 5200,
+      "cycles": 3572
+    },
+    {
+      "case": [
+        100,
+        "deque_copy_batch",
+        64,
+        "prepared"
+      ],
+      "enqueue_ns": 5500,
+      "dequeue_ns": 8900,
+      "cycles": 910
+    },
+    {
+      "case": [
+        100,
+        "rust_batch",
+        64,
+        "prepared"
+      ],
+      "enqueue_ns": 5400,
+      "dequeue_ns": 5000,
+      "cycles": 1000
+    },
+    {
+      "case": [
+        100,
+        "deque_batch",
+        64,
+        "sliced"
+      ],
+      "enqueue_ns": 1800,
+      "dequeue_ns": 4600,
+      "cycles": 2778
+    },
+    {
+      "case": [
+        100,
+        "deque_copy_batch",
+        64,
+        "sliced"
+      ],
+      "enqueue_ns": 6000,
+      "dequeue_ns": 8500,
+      "cycles": 834
+    },
+    {
+      "case": [
+        100,
+        "rust_batch",
+        64,
+        "sliced"
+      ],
+      "enqueue_ns": 5100,
+      "dequeue_ns": 4900,
+      "cycles": 1021
+    },
+    {
+      "case": [
+        100,
+        "deque_batch",
+        100,
+        "prepared"
+      ],
+      "enqueue_ns": 1000,
+      "dequeue_ns": 5200,
+      "cycles": 5000
+    },
+    {
+      "case": [
+        100,
+        "deque_copy_batch",
+        100,
+        "prepared"
+      ],
+      "enqueue_ns": 6000,
+      "dequeue_ns": 8100,
+      "cycles": 834
+    },
+    {
+      "case": [
+        100,
+        "rust_batch",
+        100,
+        "prepared"
+      ],
+      "enqueue_ns": 5200,
+      "dequeue_ns": 5100,
+      "cycles": 981
+    },
+    {
+      "case": [
+        100,
+        "deque_batch",
+        100,
+        "sliced"
+      ],
+      "enqueue_ns": 1700,
+      "dequeue_ns": 4800,
+      "cycles": 2942
+    },
+    {
+      "case": [
+        100,
+        "deque_copy_batch",
+        100,
+        "sliced"
+      ],
+      "enqueue_ns": 6200,
+      "dequeue_ns": 8500,
+      "cycles": 807
+    },
+    {
+      "case": [
+        100,
+        "rust_batch",
+        100,
+        "sliced"
+      ],
+      "enqueue_ns": 4800,
+      "dequeue_ns": 4600,
+      "cycles": 1087
+    },
+    {
+      "case": [
+        1000,
+        "deque_single",
+        1,
+        "individual"
+      ],
+      "enqueue_ns": 28900,
+      "dequeue_ns": 46200,
+      "cycles": 174
+    },
+    {
+      "case": [
+        1000,
+        "deque_copy_single",
+        1,
+        "individual"
+      ],
+      "enqueue_ns": 111600,
+      "dequeue_ns": 83000,
+      "cycles": 61
+    },
+    {
+      "case": [
+        1000,
+        "rust_single",
+        1,
+        "individual"
+      ],
+      "enqueue_ns": 84100,
+      "dequeue_ns": 118300,
+      "cycles": 60
+    },
+    {
+      "case": [
+        1000,
+        "deque_batch",
+        1,
+        "prepared"
+      ],
+      "enqueue_ns": 45200,
+      "dequeue_ns": 243300,
+      "cycles": 111
+    },
+    {
+      "case": [
+        1000,
+        "deque_copy_batch",
+        1,
+        "prepared"
+      ],
+      "enqueue_ns": 151400,
+      "dequeue_ns": 291000,
+      "cycles": 34
+    },
+    {
+      "case": [
+        1000,
+        "rust_batch",
+        1,
+        "prepared"
+      ],
+      "enqueue_ns": 169200,
+      "dequeue_ns": 303800,
+      "cycles": 30
+    },
+    {
+      "case": [
+        1000,
+        "deque_batch",
+        1,
+        "sliced"
+      ],
+      "enqueue_ns": 146300,
+      "dequeue_ns": 251400,
+      "cycles": 35
+    },
+    {
+      "case": [
+        1000,
+        "deque_copy_batch",
+        1,
+        "sliced"
+      ],
+      "enqueue_ns": 268300,
+      "dequeue_ns": 300600,
+      "cycles": 19
+    },
+    {
+      "case": [
+        1000,
+        "rust_batch",
+        1,
+        "sliced"
+      ],
+      "enqueue_ns": 286700,
+      "dequeue_ns": 481200,
+      "cycles": 18
+    },
+    {
+      "case": [
+        1000,
+        "deque_batch",
+        8,
+        "prepared"
+      ],
+      "enqueue_ns": 19500,
+      "dequeue_ns": 113400,
+      "cycles": 257
+    },
+    {
+      "case": [
+        1000,
+        "deque_copy_batch",
+        8,
+        "prepared"
+      ],
+      "enqueue_ns": 80400,
+      "dequeue_ns": 149200,
+      "cycles": 63
+    },
+    {
+      "case": [
+        1000,
+        "rust_batch",
+        8,
+        "prepared"
+      ],
+      "enqueue_ns": 51200,
+      "dequeue_ns": 90200,
+      "cycles": 98
+    },
+    {
+      "case": [
+        1000,
+        "deque_batch",
+        8,
+        "sliced"
+      ],
+      "enqueue_ns": 30300,
+      "dequeue_ns": 64100,
+      "cycles": 166
+    },
+    {
+      "case": [
+        1000,
+        "deque_copy_batch",
+        8,
+        "sliced"
+      ],
+      "enqueue_ns": 76600,
+      "dequeue_ns": 105500,
+      "cycles": 66
+    },
+    {
+      "case": [
+        1000,
+        "rust_batch",
+        8,
+        "sliced"
+      ],
+      "enqueue_ns": 63300,
+      "dequeue_ns": 84600,
+      "cycles": 79
+    },
+    {
+      "case": [
+        1000,
+        "deque_batch",
+        64,
+        "prepared"
+      ],
+      "enqueue_ns": 7700,
+      "dequeue_ns": 50700,
+      "cycles": 650
+    },
+    {
+      "case": [
+        1000,
+        "deque_copy_batch",
+        64,
+        "prepared"
+      ],
+      "enqueue_ns": 78200,
+      "dequeue_ns": 117200,
+      "cycles": 64
+    },
+    {
+      "case": [
+        1000,
+        "rust_batch",
+        64,
+        "prepared"
+      ],
+      "enqueue_ns": 49600,
+      "dequeue_ns": 83100,
+      "cycles": 101
+    },
+    {
+      "case": [
+        1000,
+        "deque_batch",
+        64,
+        "sliced"
+      ],
+      "enqueue_ns": 15000,
+      "dequeue_ns": 86900,
+      "cycles": 334
+    },
+    {
+      "case": [
+        1000,
+        "deque_copy_batch",
+        64,
+        "sliced"
+      ],
+      "enqueue_ns": 54000,
+      "dequeue_ns": 82900,
+      "cycles": 93
+    },
+    {
+      "case": [
+        1000,
+        "rust_batch",
+        64,
+        "sliced"
+      ],
+      "enqueue_ns": 46700,
+      "dequeue_ns": 50200,
+      "cycles": 108
+    },
+    {
+      "case": [
+        1000,
+        "deque_batch",
+        256,
+        "prepared"
+      ],
+      "enqueue_ns": 6800,
+      "dequeue_ns": 45400,
+      "cycles": 736
+    },
+    {
+      "case": [
+        1000,
+        "deque_copy_batch",
+        256,
+        "prepared"
+      ],
+      "enqueue_ns": 48100,
+      "dequeue_ns": 78000,
+      "cycles": 104
+    },
+    {
+      "case": [
+        1000,
+        "rust_batch",
+        256,
+        "prepared"
+      ],
+      "enqueue_ns": 28700,
+      "dequeue_ns": 43800,
+      "cycles": 175
+    },
+    {
+      "case": [
+        1000,
+        "deque_batch",
+        256,
+        "sliced"
+      ],
+      "enqueue_ns": 9600,
+      "dequeue_ns": 39500,
+      "cycles": 521
+    },
+    {
+      "case": [
+        1000,
+        "deque_copy_batch",
+        256,
+        "sliced"
+      ],
+      "enqueue_ns": 52100,
+      "dequeue_ns": 78800,
+      "cycles": 96
+    },
+    {
+      "case": [
+        1000,
+        "rust_batch",
+        256,
+        "sliced"
+      ],
+      "enqueue_ns": 31500,
+      "dequeue_ns": 47100,
+      "cycles": 159
+    },
+    {
+      "case": [
+        1000,
+        "deque_batch",
+        1000,
+        "prepared"
+      ],
+      "enqueue_ns": 6100,
+      "dequeue_ns": 49800,
+      "cycles": 820
+    },
+    {
+      "case": [
+        1000,
+        "deque_copy_batch",
+        1000,
+        "prepared"
+      ],
+      "enqueue_ns": 50400,
+      "dequeue_ns": 83600,
+      "cycles": 100
+    },
+    {
+      "case": [
+        1000,
+        "rust_batch",
+        1000,
+        "prepared"
+      ],
+      "enqueue_ns": 39900,
+      "dequeue_ns": 41600,
+      "cycles": 126
+    },
+    {
+      "case": [
+        1000,
+        "deque_batch",
+        1000,
+        "sliced"
+      ],
+      "enqueue_ns": 8800,
+      "dequeue_ns": 42500,
+      "cycles": 569
+    },
+    {
+      "case": [
+        1000,
+        "deque_copy_batch",
+        1000,
+        "sliced"
+      ],
+      "enqueue_ns": 51200,
+      "dequeue_ns": 82000,
+      "cycles": 98
+    },
+    {
+      "case": [
+        1000,
+        "rust_batch",
+        1000,
+        "sliced"
+      ],
+      "enqueue_ns": 31300,
+      "dequeue_ns": 44300,
+      "cycles": 160
+    },
+    {
+      "case": [
+        10000,
+        "deque_single",
+        1,
+        "individual"
+      ],
+      "enqueue_ns": 795400,
+      "dequeue_ns": 843000,
+      "cycles": 7
+    },
+    {
+      "case": [
+        10000,
+        "deque_copy_single",
+        1,
+        "individual"
+      ],
+      "enqueue_ns": 863500,
+      "dequeue_ns": 1005800,
+      "cycles": 6
+    },
+    {
+      "case": [
+        10000,
+        "rust_single",
+        1,
+        "individual"
+      ],
+      "enqueue_ns": 1137100,
+      "dequeue_ns": 1384100,
+      "cycles": 5
+    },
+    {
+      "case": [
+        10000,
+        "deque_batch",
+        1,
+        "prepared"
+      ],
+      "enqueue_ns": 491200,
+      "dequeue_ns": 2640500,
+      "cycles": 11
+    },
+    {
+      "case": [
+        10000,
+        "deque_copy_batch",
+        1,
+        "prepared"
+      ],
+      "enqueue_ns": 1830000,
+      "dequeue_ns": 4227600,
+      "cycles": 3
+    },
+    {
+      "case": [
+        10000,
+        "rust_batch",
+        1,
+        "prepared"
+      ],
+      "enqueue_ns": 1957000,
+      "dequeue_ns": 3004700,
+      "cycles": 3
+    },
+    {
+      "case": [
+        10000,
+        "deque_batch",
+        1,
+        "sliced"
+      ],
+      "enqueue_ns": 1634100,
+      "dequeue_ns": 2432200,
+      "cycles": 4
+    },
+    {
+      "case": [
+        10000,
+        "deque_copy_batch",
+        1,
+        "sliced"
+      ],
+      "enqueue_ns": 5163300,
+      "dequeue_ns": 3035700,
+      "cycles": 2
+    },
+    {
+      "case": [
+        10000,
+        "rust_batch",
+        1,
+        "sliced"
+      ],
+      "enqueue_ns": 3159300,
+      "dequeue_ns": 2961200,
+      "cycles": 2
+    },
+    {
+      "case": [
+        10000,
+        "deque_batch",
+        8,
+        "prepared"
+      ],
+      "enqueue_ns": 220200,
+      "dequeue_ns": 772200,
+      "cycles": 23
+    },
+    {
+      "case": [
+        10000,
+        "deque_copy_batch",
+        8,
+        "prepared"
+      ],
+      "enqueue_ns": 890900,
+      "dequeue_ns": 2005200,
+      "cycles": 6
+    },
+    {
+      "case": [
+        10000,
+        "rust_batch",
+        8,
+        "prepared"
+      ],
+      "enqueue_ns": 729400,
+      "dequeue_ns": 873000,
+      "cycles": 7
+    },
+    {
+      "case": [
+        10000,
+        "deque_batch",
+        8,
+        "sliced"
+      ],
+      "enqueue_ns": 289800,
+      "dequeue_ns": 625800,
+      "cycles": 18
+    },
+    {
+      "case": [
+        10000,
+        "deque_copy_batch",
+        8,
+        "sliced"
+      ],
+      "enqueue_ns": 1008300,
+      "dequeue_ns": 1520000,
+      "cycles": 5
+    },
+    {
+      "case": [
+        10000,
+        "rust_batch",
+        8,
+        "sliced"
+      ],
+      "enqueue_ns": 1051300,
+      "dequeue_ns": 915400,
+      "cycles": 6
+    },
+    {
+      "case": [
+        10000,
+        "deque_batch",
+        64,
+        "prepared"
+      ],
+      "enqueue_ns": 137400,
+      "dequeue_ns": 478700,
+      "cycles": 37
+    },
+    {
+      "case": [
+        10000,
+        "deque_copy_batch",
+        64,
+        "prepared"
+      ],
+      "enqueue_ns": 595000,
+      "dequeue_ns": 871900,
+      "cycles": 9
+    },
+    {
+      "case": [
+        10000,
+        "rust_batch",
+        64,
+        "prepared"
+      ],
+      "enqueue_ns": 318800,
+      "dequeue_ns": 635000,
+      "cycles": 16
+    },
+    {
+      "case": [
+        10000,
+        "deque_batch",
+        64,
+        "sliced"
+      ],
+      "enqueue_ns": 323600,
+      "dequeue_ns": 1330100,
+      "cycles": 16
+    },
+    {
+      "case": [
+        10000,
+        "deque_copy_batch",
+        64,
+        "sliced"
+      ],
+      "enqueue_ns": 2249700,
+      "dequeue_ns": 1107000,
+      "cycles": 5
+    },
+    {
+      "case": [
+        10000,
+        "rust_batch",
+        64,
+        "sliced"
+      ],
+      "enqueue_ns": 1207600,
+      "dequeue_ns": 1862500,
+      "cycles": 5
+    },
+    {
+      "case": [
+        10000,
+        "deque_batch",
+        256,
+        "prepared"
+      ],
+      "enqueue_ns": 794000,
+      "dequeue_ns": 768300,
+      "cycles": 7
+    },
+    {
+      "case": [
+        10000,
+        "deque_copy_batch",
+        256,
+        "prepared"
+      ],
+      "enqueue_ns": 1046300,
+      "dequeue_ns": 1957400,
+      "cycles": 5
+    },
+    {
+      "case": [
+        10000,
+        "rust_batch",
+        256,
+        "prepared"
+      ],
+      "enqueue_ns": 405500,
+      "dequeue_ns": 630400,
+      "cycles": 13
+    },
+    {
+      "case": [
+        10000,
+        "deque_batch",
+        256,
+        "sliced"
+      ],
+      "enqueue_ns": 166500,
+      "dequeue_ns": 858000,
+      "cycles": 31
+    },
+    {
+      "case": [
+        10000,
+        "deque_copy_batch",
+        256,
+        "sliced"
+      ],
+      "enqueue_ns": 1725200,
+      "dequeue_ns": 1327400,
+      "cycles": 4
+    },
+    {
+      "case": [
+        10000,
+        "rust_batch",
+        256,
+        "sliced"
+      ],
+      "enqueue_ns": 662500,
+      "dequeue_ns": 1353400,
+      "cycles": 8
+    },
+    {
+      "case": [
+        10000,
+        "deque_batch",
+        1024,
+        "prepared"
+      ],
+      "enqueue_ns": 171900,
+      "dequeue_ns": 1243700,
+      "cycles": 30
+    },
+    {
+      "case": [
+        10000,
+        "deque_copy_batch",
+        1024,
+        "prepared"
+      ],
+      "enqueue_ns": 1433100,
+      "dequeue_ns": 1252500,
+      "cycles": 4
+    },
+    {
+      "case": [
+        10000,
+        "rust_batch",
+        1024,
+        "prepared"
+      ],
+      "enqueue_ns": 325200,
+      "dequeue_ns": 727800,
+      "cycles": 16
+    },
+    {
+      "case": [
+        10000,
+        "deque_batch",
+        1024,
+        "sliced"
+      ],
+      "enqueue_ns": 174700,
+      "dequeue_ns": 611800,
+      "cycles": 29
+    },
+    {
+      "case": [
+        10000,
+        "deque_copy_batch",
+        1024,
+        "sliced"
+      ],
+      "enqueue_ns": 760400,
+      "dequeue_ns": 2252600,
+      "cycles": 7
+    },
+    {
+      "case": [
+        10000,
+        "rust_batch",
+        1024,
+        "sliced"
+      ],
+      "enqueue_ns": 1074300,
+      "dequeue_ns": 1620700,
+      "cycles": 5
+    },
+    {
+      "case": [
+        10000,
+        "deque_batch",
+        10000,
+        "prepared"
+      ],
+      "enqueue_ns": 119000,
+      "dequeue_ns": 463700,
+      "cycles": 43
+    },
+    {
+      "case": [
+        10000,
+        "deque_copy_batch",
+        10000,
+        "prepared"
+      ],
+      "enqueue_ns": 780900,
+      "dequeue_ns": 1968600,
+      "cycles": 7
+    },
+    {
+      "case": [
+        10000,
+        "rust_batch",
+        10000,
+        "prepared"
+      ],
+      "enqueue_ns": 907800,
+      "dequeue_ns": 1457500,
+      "cycles": 6
+    },
+    {
+      "case": [
+        10000,
+        "deque_batch",
+        10000,
+        "sliced"
+      ],
+      "enqueue_ns": 436400,
+      "dequeue_ns": 1210900,
+      "cycles": 12
+    },
+    {
+      "case": [
+        10000,
+        "deque_copy_batch",
+        10000,
+        "sliced"
+      ],
+      "enqueue_ns": 1251700,
+      "dequeue_ns": 995000,
+      "cycles": 6
+    },
+    {
+      "case": [
+        10000,
+        "rust_batch",
+        10000,
+        "sliced"
+      ],
+      "enqueue_ns": 432700,
+      "dequeue_ns": 796100,
+      "cycles": 12
+    },
+    {
+      "case": [
+        100000,
+        "deque_single",
+        1,
+        "individual"
+      ],
+      "enqueue_ns": 5043800,
+      "dequeue_ns": 5472200,
+      "cycles": 1
+    },
+    {
+      "case": [
+        100000,
+        "deque_copy_single",
+        1,
+        "individual"
+      ],
+      "enqueue_ns": 13685300,
+      "dequeue_ns": 10567800,
+      "cycles": 1
+    },
+    {
+      "case": [
+        100000,
+        "rust_single",
+        1,
+        "individual"
+      ],
+      "enqueue_ns": 15171300,
+      "dequeue_ns": 21485600,
+      "cycles": 1
+    },
+    {
+      "case": [
+        100000,
+        "deque_batch",
+        1,
+        "prepared"
+      ],
+      "enqueue_ns": 5696800,
+      "dequeue_ns": 38045300,
+      "cycles": 1
+    },
+    {
+      "case": [
+        100000,
+        "deque_copy_batch",
+        1,
+        "prepared"
+      ],
+      "enqueue_ns": 29113100,
+      "dequeue_ns": 41921900,
+      "cycles": 1
+    },
+    {
+      "case": [
+        100000,
+        "rust_batch",
+        1,
+        "prepared"
+      ],
+      "enqueue_ns": 20788200,
+      "dequeue_ns": 40632300,
+      "cycles": 1
+    },
+    {
+      "case": [
+        100000,
+        "deque_batch",
+        1,
+        "sliced"
+      ],
+      "enqueue_ns": 17771200,
+      "dequeue_ns": 40506000,
+      "cycles": 1
+    },
+    {
+      "case": [
+        100000,
+        "deque_copy_batch",
+        1,
+        "sliced"
+      ],
+      "enqueue_ns": 28803800,
+      "dequeue_ns": 29724600,
+      "cycles": 1
+    },
+    {
+      "case": [
+        100000,
+        "rust_batch",
+        1,
+        "sliced"
+      ],
+      "enqueue_ns": 31723400,
+      "dequeue_ns": 41628000,
+      "cycles": 1
+    },
+    {
+      "case": [
+        100000,
+        "deque_batch",
+        8,
+        "prepared"
+      ],
+      "enqueue_ns": 1347900,
+      "dequeue_ns": 7453900,
+      "cycles": 4
+    },
+    {
+      "case": [
+        100000,
+        "deque_copy_batch",
+        8,
+        "prepared"
+      ],
+      "enqueue_ns": 8597300,
+      "dequeue_ns": 10985200,
+      "cycles": 1
+    },
+    {
+      "case": [
+        100000,
+        "rust_batch",
+        8,
+        "prepared"
+      ],
+      "enqueue_ns": 6687100,
+      "dequeue_ns": 12672600,
+      "cycles": 1
+    },
+    {
+      "case": [
+        100000,
+        "deque_batch",
+        8,
+        "sliced"
+      ],
+      "enqueue_ns": 2785400,
+      "dequeue_ns": 6360900,
+      "cycles": 2
+    },
+    {
+      "case": [
+        100000,
+        "deque_copy_batch",
+        8,
+        "sliced"
+      ],
+      "enqueue_ns": 9438400,
+      "dequeue_ns": 10501200,
+      "cycles": 1
+    },
+    {
+      "case": [
+        100000,
+        "rust_batch",
+        8,
+        "sliced"
+      ],
+      "enqueue_ns": 9114800,
+      "dequeue_ns": 12516300,
+      "cycles": 1
+    },
+    {
+      "case": [
+        100000,
+        "deque_batch",
+        64,
+        "prepared"
+      ],
+      "enqueue_ns": 3269200,
+      "dequeue_ns": 4759100,
+      "cycles": 2
+    },
+    {
+      "case": [
+        100000,
+        "deque_copy_batch",
+        64,
+        "prepared"
+      ],
+      "enqueue_ns": 6857500,
+      "dequeue_ns": 16946400,
+      "cycles": 1
+    },
+    {
+      "case": [
+        100000,
+        "rust_batch",
+        64,
+        "prepared"
+      ],
+      "enqueue_ns": 6861400,
+      "dequeue_ns": 14113600,
+      "cycles": 1
+    },
+    {
+      "case": [
+        100000,
+        "deque_batch",
+        64,
+        "sliced"
+      ],
+      "enqueue_ns": 1951500,
+      "dequeue_ns": 4501100,
+      "cycles": 3
+    },
+    {
+      "case": [
+        100000,
+        "deque_copy_batch",
+        64,
+        "sliced"
+      ],
+      "enqueue_ns": 7716500,
+      "dequeue_ns": 9738000,
+      "cycles": 1
+    },
+    {
+      "case": [
+        100000,
+        "rust_batch",
+        64,
+        "sliced"
+      ],
+      "enqueue_ns": 4887900,
+      "dequeue_ns": 8208200,
+      "cycles": 2
+    },
+    {
+      "case": [
+        100000,
+        "deque_batch",
+        256,
+        "prepared"
+      ],
+      "enqueue_ns": 941300,
+      "dequeue_ns": 3973400,
+      "cycles": 6
+    },
+    {
+      "case": [
+        100000,
+        "deque_copy_batch",
+        256,
+        "prepared"
+      ],
+      "enqueue_ns": 6358300,
+      "dequeue_ns": 9182200,
+      "cycles": 1
+    },
+    {
+      "case": [
+        100000,
+        "rust_batch",
+        256,
+        "prepared"
+      ],
+      "enqueue_ns": 4700500,
+      "dequeue_ns": 8001500,
+      "cycles": 2
+    },
+    {
+      "case": [
+        100000,
+        "deque_batch",
+        256,
+        "sliced"
+      ],
+      "enqueue_ns": 1563100,
+      "dequeue_ns": 4072100,
+      "cycles": 4
+    },
+    {
+      "case": [
+        100000,
+        "deque_copy_batch",
+        256,
+        "sliced"
+      ],
+      "enqueue_ns": 8045900,
+      "dequeue_ns": 8678300,
+      "cycles": 1
+    },
+    {
+      "case": [
+        100000,
+        "rust_batch",
+        256,
+        "sliced"
+      ],
+      "enqueue_ns": 5328400,
+      "dequeue_ns": 9834200,
+      "cycles": 1
+    },
+    {
+      "case": [
+        100000,
+        "deque_batch",
+        1024,
+        "prepared"
+      ],
+      "enqueue_ns": 1227800,
+      "dequeue_ns": 5035900,
+      "cycles": 5
+    },
+    {
+      "case": [
+        100000,
+        "deque_copy_batch",
+        1024,
+        "prepared"
+      ],
+      "enqueue_ns": 6472800,
+      "dequeue_ns": 9181600,
+      "cycles": 1
+    },
+    {
+      "case": [
+        100000,
+        "rust_batch",
+        1024,
+        "prepared"
+      ],
+      "enqueue_ns": 4119600,
+      "dequeue_ns": 8279500,
+      "cycles": 2
+    },
+    {
+      "case": [
+        100000,
+        "deque_batch",
+        1024,
+        "sliced"
+      ],
+      "enqueue_ns": 2582600,
+      "dequeue_ns": 5369200,
+      "cycles": 2
+    },
+    {
+      "case": [
+        100000,
+        "deque_copy_batch",
+        1024,
+        "sliced"
+      ],
+      "enqueue_ns": 8576500,
+      "dequeue_ns": 9219800,
+      "cycles": 1
+    },
+    {
+      "case": [
+        100000,
+        "rust_batch",
+        1024,
+        "sliced"
+      ],
+      "enqueue_ns": 5893600,
+      "dequeue_ns": 7312400,
+      "cycles": 1
+    },
+    {
+      "case": [
+        100000,
+        "deque_batch",
+        100000,
+        "prepared"
+      ],
+      "enqueue_ns": 3468300,
+      "dequeue_ns": 5662800,
+      "cycles": 2
+    },
+    {
+      "case": [
+        100000,
+        "deque_copy_batch",
+        100000,
+        "prepared"
+      ],
+      "enqueue_ns": 8641500,
+      "dequeue_ns": 10251700,
+      "cycles": 1
+    },
+    {
+      "case": [
+        100000,
+        "rust_batch",
+        100000,
+        "prepared"
+      ],
+      "enqueue_ns": 4677900,
+      "dequeue_ns": 9058100,
+      "cycles": 2
+    },
+    {
+      "case": [
+        100000,
+        "deque_batch",
+        100000,
+        "sliced"
+      ],
+      "enqueue_ns": 2600400,
+      "dequeue_ns": 7776200,
+      "cycles": 2
+    },
+    {
+      "case": [
+        100000,
+        "deque_copy_batch",
+        100000,
+        "sliced"
+      ],
+      "enqueue_ns": 10719900,
+      "dequeue_ns": 9551000,
+      "cycles": 1
+    },
+    {
+      "case": [
+        100000,
+        "rust_batch",
+        100000,
+        "sliced"
+      ],
+      "enqueue_ns": 6652400,
+      "dequeue_ns": 11318500,
+      "cycles": 1
+    }
+  ],
+  "case_count": 138,
+  "finished_utc": "2026-11-18T06:57:45.189017+00:00",
+  "raw_rows": 3036,
+  "status": "complete"
+}
