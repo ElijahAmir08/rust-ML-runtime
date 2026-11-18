@@ -98,4 +98,39 @@ mod tests { //Creates module containing the tests
 
         assert!(queue.dequeue().is_none());
     }
+    // Chat GPT 6.1 helped create the two tests below, for the sake of time I had it create any remaining important tests
+    
+    #[test]
+    // Checks that the same queue can be reused and preserves the correct requests
+    // Stresses filling, emptying, and reusing the same queue
+    fn test_fields_and_repeated_operations() {
+        let mut queue = RequestQueue::new();
+        for cycle in 0..100 {
+            queue.enqueue(Request { id: cycle, arrival_ms: 100, duration_ms: 0 });
+            queue.enqueue(Request { id: cycle, arrival_ms: 0, duration_ms: 25 });
+            let first = queue.dequeue().unwrap();
+            assert_eq!((first.id, first.arrival_ms, first.duration_ms), (cycle, 100, 0));
+            assert_eq!(queue.len(), 1);
+            let second = queue.dequeue().unwrap();
+            assert_eq!((second.id, second.arrival_ms, second.duration_ms), (cycle, 0, 25));
+            assert!(queue.dequeue().is_none());
+        }
+    }
+
+    #[test]
+    //Checks the timing calculations from simulate_fifo
+    fn test_simulate_fifo_waiting_and_idle_time() {
+        let mut queue = RequestQueue::new();
+        queue.enqueue(Request { id: 1, arrival_ms: 5, duration_ms: 10 });
+        queue.enqueue(Request { id: 2, arrival_ms: 8, duration_ms: 3 });
+        queue.enqueue(Request { id: 3, arrival_ms: 30, duration_ms: 0 });
+
+        let records = simulate_fifo(&mut queue);
+        let actual: Vec<_> = records.iter()
+            .map(|record| (record.id, record.start_ms, record.finish_ms, record.wait_ms))
+            .collect();
+        assert_eq!(actual, vec![(1, 5, 15, 0), (2, 15, 18, 7), (3, 30, 30, 0)]);
+        assert_eq!(queue.len(), 0);
+        assert!(simulate_fifo(&mut queue).is_empty());
+    }
 }
