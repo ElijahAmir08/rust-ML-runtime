@@ -10,3 +10,4 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = "0.29.0"
+rust_scheduler = { path = "../rust_scheduler" }
