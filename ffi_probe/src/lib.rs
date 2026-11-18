@@ -5,7 +5,7 @@ use pyo3::prelude::*;
 // is to be exposed to python
 #[pymodule]
 mod ffi_probe {
-    use rust_scheduler::RequestQueue;
+    use rust_scheduler::{Request, RequestQueue};
     use pyo3::prelude::*;
 
     // Exposes a Rust struct as a python class
@@ -24,19 +24,57 @@ mod ffi_probe {
                 inner: RequestQueue::new(),
             }
         }
-    }
+    
 
     //pyfunction is same use as pymodule
     /// Accepts a collection of request IDs and returns how many
-    #[pyfunction]
-    fn count_requests(ids: Vec<u64>) -> usize {
-        ids.len()
-    }
+    // fn count_requests(ids: Vec<u64>) -> usize {
+    //     ids.len()
+    // }
 
     // Basic function to cost of Python to Rust call
-    #[pyfunction]
+    #[staticmethod]
     fn ping() -> u64 {
         1
     }
+    //Add a request to the back of Rust queue
+    fn enqueue(&mut self, id: u64, arrival_ms: u64, duration_ms: u64) {
+        self.inner.enqueue(Request {
+            id,
+            arrival_ms,
+            duration_ms,
+        });
+    }
 
+    fn dequeue(&mut self) -> Option<(u64, u64, u64)> {
+        //Turn the popped request into a tuple for Python
+        match self.inner.dequeue() {
+            Some(popped_request) => {
+                Some((popped_request.id, popped_request.arrival_ms, popped_request.duration_ms))
+            }
+            None => None,
+        }
+    }
+
+    //Append a batch after PyO3 converts and validates each tuple
+    fn enqueue_batch(&mut self, requests: Vec<(u64, u64, u64)>) {
+        for (id, arrival_ms, duration_ms) in requests {
+            self.enqueue(id, arrival_ms, duration_ms);
+        }
+    }
+
+    //Remove up to max_requests items, in FIFO order
+    fn dequeue_batch(&mut self, max_requests: usize) -> Vec<(u64, u64, u64)> {
+        //Let count be the requested amount or if queue contains less then take the len
+        let count = max_requests.min(self.inner.len());
+        let mut requests = Vec::with_capacity(count);
+        for _ in 0..count {
+            if let Some(request) = self.dequeue() {
+                requests.push(request)
+            }
+        }
+        requests
+    }
+
+    }
 }
