@@ -120,25 +120,40 @@ def dashboard(uid, title, panels, variables, time_from, time_to, desc):
             "templating": {"list": variables}, "panels": panels, "annotations": {"list": []}}
 
 
+LATENCY_COLS = [  # (summary metric, table label, unit, decimals)
+    ("ttft", "TTFT", "ms", 0), ("tpot", "TPOT", "ms/token", 1), ("itl", "ITL", "ms", 1),
+    ("e2e", "E2E", "ms", 0), ("norm_latency", "norm. latency", "ms/token", 1),
+]
+STATS = ("mean", "p50", "p90", "p95", "p99")
 RUN_TABLE_SQL = """SELECT label AS run, scenario, rate AS [rate (req/s)], rep AS repeat,
   offered_rps AS [offered (req/s)], steady_requests_per_s AS [completed (req/s)],
   steady_output_tokens_per_s AS [output (tokens/s)],
-  ttft_p50_ms AS [TTFT p50 (ms)], ttft_p99_ms AS [TTFT p99 (ms)], tpot_p50_ms AS [TPOT p50 (ms/token)],
-  tpot_p99_ms AS [TPOT p99 (ms/token)], e2e_p99_ms AS [E2E p99 (ms)],
+  """ + ",\n  ".join(f"{m}_{s}_ms AS [{lbl} {s} ({unit})]" for m, lbl, unit, _ in LATENCY_COLS for s in STATS) + """,
   srv_running_mean AS [batch: mean running (requests)], srv_waiting_mean AS [queue: mean waiting (requests)],
-  srv_kv_cache_usage_mean * 100 AS [KV cache used, mean (%)], srv_queue_mean_ms AS [vLLM queue wait, mean (ms)],
-  srv_preemptions AS [preemptions (count)], successes AS [completed (requests)], requests AS [sent (requests)],
+  srv_waiting_max AS [queue: max waiting (requests)],
+  srv_kv_cache_usage_mean * 100 AS [KV cache used, mean (%)], srv_kv_cache_usage_max * 100 AS [KV cache used, max (%)],
+  srv_preemptions AS [preemptions (count)], srv_queue_mean_ms AS [vLLM queue wait, mean (ms)],
+  [srv_queue_frac_over_1.0s] * 100 AS [waited > 1 s in vLLM queue (%)],
+  srv_prefix_cache_hit_rate * 100 AS [prefix cache hit rate (%)],
+  successes AS [completed (requests)], requests AS [sent (requests)], client_max_lag_ms AS [client max lag (ms)],
   run_id, experiment, from_ms, to_ms
 FROM runs WHERE experiment = '$experiment' {extra} ORDER BY mode, scenario, rate, rep"""
 TABLE_DECIMALS = {
     "rate (req/s)": 2, "offered (req/s)": 2, "completed (req/s)": 2, "output (tokens/s)": 0,
-    "TTFT p50 (ms)": 0, "TTFT p99 (ms)": 0, "TPOT p50 (ms/token)": 1, "TPOT p99 (ms/token)": 1, "E2E p99 (ms)": 0,
-    "batch: mean running (requests)": 1, "queue: mean waiting (requests)": 1, "KV cache used, mean (%)": 0,
-    "vLLM queue wait, mean (ms)": 0, "preemptions (count)": 0, "completed (requests)": 0, "sent (requests)": 0,
+    **{f"{lbl} {s} ({unit})": dec for _, lbl, unit, dec in LATENCY_COLS for s in STATS},
+    "batch: mean running (requests)": 1, "queue: mean waiting (requests)": 1, "queue: max waiting (requests)": 0,
+    "KV cache used, mean (%)": 0, "KV cache used, max (%)": 0, "preemptions (count)": 0,
+    "vLLM queue wait, mean (ms)": 0, "waited > 1 s in vLLM queue (%)": 1, "prefix cache hit rate (%)": 1,
+    "completed (requests)": 0, "sent (requests)": 0, "client max lag (ms)": 1,
 }
 
+
+def shades(dark, light):
+    """Bar colors for a mean / p50 / p99 chart: mean neutral grey, p50 light, p99 dark."""
+    return {"mean": "#94a3b8", "p50": light, "p99": dark}
+
 GUIDE = """**How to use.** Each row below is one scenario's rate sweep: bars are the **median over repeats**
-at each offered rate. The table at the bottom lists every run; click a run name to open it in
+at each offered rate. Latency charts show mean (grey), p50 (light) and p99 (dark); p90/p95 are in the table. The table at the bottom lists every run; click a run name to open it in
 **vLLM run detail** and watch load, batch size, queue depth, KV cache and latency change *during* the run.
 Select several runs there to overlay them (sweep runs share an elapsed-time axis: 00:01:30 = 90 s in).
 
@@ -155,26 +170,67 @@ def overview():
     y += 1
     agg = "FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate"
     rate_lbl = "printf('%g req/s', rate) AS rate"
-    panels += [
+
+    def lat(m):  # mean, p50 and p99 columns of one latency metric
+        return f"SELECT {rate_lbl}, {m}_mean_ms_med AS mean, {m}_p50_ms_med AS p50, {m}_p99_ms_med AS p99 {agg}"
+
+    def gp(x):
+        return {"x": x, "y": y, "w": 6, "h": 8}
+
+    panels += [  # throughput and the scheduler's view
         barchart("Throughput: offered vs completed (requests/s)",
                  f"SELECT {rate_lbl}, offered_rps_med AS offered, steady_requests_per_s_med AS completed {agg}",
-                 {"x": 0, "y": y, "w": 6, "h": 8}, "throughput (requests/s)", unit="reqps",
+                 gp(0), "throughput (requests/s)", unit="reqps",
                  colors={"offered": "#94a3b8", "completed": "#2563eb"},
                  desc="If completed < offered, requests pile up in vLLM's queue: the server is past saturation."),
-        barchart("Time to first token: p50 and p99 (log scale)",
-                 f"SELECT {rate_lbl}, ttft_p50_ms_med AS p50, ttft_p99_ms_med AS p99 {agg}",
-                 {"x": 6, "y": y, "w": 6, "h": 8}, "time to first token", unit="ms", log=True,
-                 colors={"p50": "#60a5fa", "p99": "#1d4ed8"}, desc="Log scale. Includes queueing + prefill."),
-        barchart("Time per output token: p50, p99 (ms/token)",
-                 f"SELECT {rate_lbl}, tpot_p50_ms_med AS p50, tpot_p99_ms_med AS p99 {agg}",
-                 {"x": 12, "y": y, "w": 6, "h": 8}, "time per output token", unit="ms",
-                 colors={"p50": "#5eead4", "p99": "#0f766e"},
-                 desc="(e2e - ttft) / (tokens - 1). Grows when prefill chunks share steps with decodes."),
+        barchart("Output throughput (tokens/s)",
+                 f"SELECT {rate_lbl}, steady_output_tokens_per_s_med AS [output tokens/s] {agg}",
+                 gp(6), "output tokens per second", unit="none", colors={"output tokens/s": "#2563eb"},
+                 desc="Output tokens streamed inside the measured interval ÷ its length."),
         barchart("vLLM batch and queue: mean number of requests",
                  f"SELECT {rate_lbl}, srv_running_mean_med AS [batch (running)], "
                  f"srv_waiting_mean_med AS [queued (waiting)] {agg}",
-                 {"x": 18, "y": y, "w": 6, "h": 8}, "requests (count)", unit="none",
+                 gp(12), "requests (count)", unit="none",
                  colors={"batch (running)": "#2563eb", "queued (waiting)": "#be123c"}),
+        barchart("vLLM queue wait: mean (ms)",
+                 f"SELECT {rate_lbl}, srv_queue_mean_ms_med AS [mean wait] {agg}",
+                 gp(18), "time in vLLM's queue", unit="ms", colors={"mean wait": "#be123c"},
+                 desc="Mean time from arriving at vLLM to first being scheduled (includes warmup requests)."),
+    ]
+    y += 8
+    panels += [  # latency: mean (grey), p50 (light), p99 (dark)
+        barchart("Time to first token: mean, p50, p99 (log scale)", lat("ttft"), gp(0), "time to first token",
+                 unit="ms", log=True, colors=shades("#1d4ed8", "#60a5fa"),
+                 desc="Arrival → first token. Queue wait + prefill."),
+        barchart("Time per output token: mean, p50, p99 (ms/token)", lat("tpot"), gp(6), "time per output token",
+                 unit="ms", colors=shades("#0f766e", "#5eead4"),
+                 desc="Per request: (e2e - ttft) / (tokens - 1), the average gap between its tokens."),
+        barchart("Inter-token latency: mean, p50, p99 (ms)", lat("itl"), gp(12), "gap between tokens",
+                 unit="ms", colors=shades("#7c3aed", "#c4b5fd"),
+                 desc="Every gap between two consecutive tokens of a request, pooled (≈ one engine step). "
+                      "p99 = decode stalls: a big prefill in the same step, or a preemption."),
+        barchart("End-to-end latency: mean, p50, p99 (log scale)", lat("e2e"), gp(18), "end-to-end latency",
+                 unit="ms", log=True, colors=shades("#9a3412", "#fdba74"),
+                 desc="Arrival → last token. Dominated by output length: compare within a scenario."),
+    ]
+    y += 8
+    panels += [  # normalized latency and KV-cache pressure
+        barchart("Normalized latency: mean, p50, p99 (ms per output token, log scale)", lat("norm_latency"),
+                 gp(0), "latency per output token", unit="ms", log=True, colors=shades("#a21caf", "#f0abfc"),
+                 desc="e2e ÷ output tokens (the vLLM paper's metric); comparable across scenarios."),
+        barchart("KV cache used: mean and max (%)",
+                 f"SELECT {rate_lbl}, srv_kv_cache_usage_mean_med * 100 AS mean, "
+                 f"srv_kv_cache_usage_max_med * 100 AS max {agg}",
+                 gp(6), "KV-cache blocks in use (%)", unit="percent", colors={"mean": "#fdba74", "max": "#c2410c"},
+                 desc="Near 100% vLLM must preempt running requests."),
+        barchart("Preemptions (count per run)",
+                 f"SELECT {rate_lbl}, srv_preemptions_med AS preemptions {agg}",
+                 gp(12), "preemptions", unit="none", colors={"preemptions": "#be123c"},
+                 desc="Requests evicted for lack of KV blocks and recomputed later. > 0 = real KV-cache pressure."),
+        barchart("Requests that waited > 1 s in vLLM's queue (%)",
+                 f"SELECT {rate_lbl}, [srv_queue_frac_over_1.0s_med] * 100 AS [waited > 1 s] {agg}",
+                 gp(18), "requests (%)", unit="percent", colors={"waited > 1 s": "#be123c"},
+                 desc="From vLLM's queue-time histogram (includes warmup requests)."),
     ]
     y += 8
     panels.append(row("All runs (click a run to open it over time)", y))
@@ -239,7 +295,16 @@ def run_detail():
                    f"SELECT time, e2e_ms AS value, label {r} AND success ORDER BY time",
                    {"x": 12, "y": 27, "w": 12, "h": 9}, "end-to-end latency", unit="ms", points=True, log=True,
                    desc="One dot per request, placed at its scheduled arrival time."),
-        table("Selected runs", RUN_TABLE_SQL.format(extra="AND " + RUNS), {"x": 0, "y": 36, "w": 24, "h": 6},
+        timeseries("End-to-end latency: p50 and p99 per time window (log scale)",
+                   f"SELECT windows.time, windows.e2e_p50_ms AS p50, windows.e2e_p99_ms AS p99, label {w}",
+                   {"x": 0, "y": 36, "w": 12, "h": 9}, "end-to-end latency", unit="ms", display=two, log=True,
+                   desc="Requests grouped by arrival time into windows (10 s of run time for sweeps)."),
+        timeseries("Normalized latency: p50 and p99 per time window (ms per output token, log scale)",
+                   f"SELECT windows.time, windows.norm_latency_p50_ms AS p50, windows.norm_latency_p99_ms AS p99, "
+                   f"label {w}",
+                   {"x": 12, "y": 36, "w": 12, "h": 9}, "latency per output token", unit="ms", display=two, log=True,
+                   desc="e2e ÷ output tokens, requests grouped by arrival time."),
+        table("Selected runs", RUN_TABLE_SQL.format(extra="AND " + RUNS), {"x": 0, "y": 45, "w": 24, "h": 6},
               link=False),
     ]
     variables = [

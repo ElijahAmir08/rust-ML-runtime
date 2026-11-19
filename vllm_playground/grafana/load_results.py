@@ -28,11 +28,12 @@ from pathlib import Path
 
 SWEEP_ORIGIN = 946684800.0  # 2000-01-01 00:00:00 UTC: midnight, so the time axis reads as elapsed time.
 # (Timestamps near the 1970 epoch make Grafana report "Invalid date" for the time range.)
+LATENCIES = ("ttft", "tpot", "itl", "e2e", "norm_latency")
 AGG_METRICS = [
-    "offered_rps", "steady_requests_per_s", "steady_output_tokens_per_s",
-    "ttft_p50_ms", "ttft_p90_ms", "ttft_p99_ms", "tpot_p50_ms", "tpot_p99_ms", "itl_p50_ms", "itl_p99_ms",
-    "e2e_p50_ms", "e2e_p99_ms", "srv_running_mean", "srv_waiting_mean", "srv_kv_cache_usage_mean",
-    "srv_queue_mean_ms", "srv_preemptions",
+    "offered_rps", "steady_requests_per_s", "steady_output_tokens_per_s", "client_max_lag_ms",
+    *(f"{m}_{s}_ms" for m in LATENCIES for s in ("mean", "p50", "p90", "p95", "p99")),
+    "srv_running_mean", "srv_waiting_mean", "srv_waiting_max", "srv_kv_cache_usage_mean", "srv_kv_cache_usage_max",
+    "srv_queue_mean_ms", "srv_queue_frac_over_1.0s", "srv_preemptions", "srv_prefix_cache_hit_rate",
 ]
 
 
@@ -114,11 +115,27 @@ def windows(reqs: list[dict], bucket: float) -> list[dict]:
         ttft = [r["ttft"] * 1000 for r in rs if r["ttft"] is not None]
         tpot = [r["tpot"] * 1000 for r in rs if r.get("tpot") is not None]
         e2e = [r["e2e"] * 1000 for r in rs if r["e2e"] is not None]
+        norm = [r["norm_latency"] * 1000 for r in rs if r.get("norm_latency") is not None]
         out.append({"t_s": b * bucket, "bucket_s": bucket,
                     "arrivals_per_s": len(by_arrival.get(b, [])) / bucket, "completions_per_s": done.get(b, 0) / bucket,
                     "ttft_p50_ms": pct(ttft, 50), "ttft_p99_ms": pct(ttft, 99),
-                    "tpot_p50_ms": pct(tpot, 50), "tpot_p99_ms": pct(tpot, 99), "e2e_p50_ms": pct(e2e, 50)})
+                    "tpot_p50_ms": pct(tpot, 50), "tpot_p99_ms": pct(tpot, 99),
+                    "e2e_p50_ms": pct(e2e, 50), "e2e_p99_ms": pct(e2e, 99),
+                    "norm_latency_p50_ms": pct(norm, 50), "norm_latency_p99_ms": pct(norm, 99)})
     return out
+
+
+def backfill_norm_latency(run: dict, reqs: list[dict]):
+    """Results recorded before norm_latency existed: compute it (e2e / output tokens) from the request CSV."""
+    for r in reqs:
+        if r.get("norm_latency") is None and r["success"] and r["e2e"] is not None and r["received_tokens"]:
+            r["norm_latency"] = r["e2e"] / r["received_tokens"]
+    if run.get("norm_latency_p50_ms") is None:
+        v = [r["norm_latency"] * 1000 for r in reqs
+             if r.get("norm_latency") is not None and r["arrival_time"] >= (run["warmup_s"] or 0)]
+        if v:
+            run |= {"norm_latency_mean_ms": statistics.fmean(v),
+                    **{f"norm_latency_p{q}_ms": pct(v, q) for q in (50, 90, 95, 99)}}
 
 
 def create(db: sqlite3.Connection, table: str, rows: list[dict], first: list[str]):
@@ -138,6 +155,7 @@ def main():
             continue
         o, s, rid = run["time_origin"], run["time_scale"], run["run_id"]
         reqs = read_csv(req_csv)
+        backfill_norm_latency(run, reqs)
         last = max((r["arrival_time"] + (r["e2e"] or 0) for r in reqs), default=0)
         run |= {"last_completion_s": last, "from_ms": int((o - 5) * 1000), "to_ms": int((o + (last + 10) * s) * 1000)}
         runs.append(run)
@@ -147,7 +165,7 @@ def main():
                              **{k: r.get(k) for k in ("id", "arrival_time", "prompt_tokens", "output_tokens",
                                                       "received_tokens", "success", "error")},
                              **{f"{k}_ms": (r[k] * 1000 if r.get(k) is not None else None)
-                                for k in ("ttft", "tpot", "e2e", "mean_itl")}})
+                                for k in ("ttft", "tpot", "e2e", "norm_latency", "mean_itl")}})
         if srv_csv.exists():
             for g in read_csv(srv_csv):
                 server.append({"run_id": rid, "time": o + g["t"] * s, **g})

@@ -620,12 +620,138 @@
       "id": 10
     },
     {
+      "type": "timeseries",
+      "title": "End-to-end latency: p50 and p99 per time window (log scale)",
+      "description": "Requests grouped by arrival time into windows (10 s of run time for sweeps).",
+      "gridPos": {
+        "x": 0,
+        "y": 36,
+        "w": 12,
+        "h": 9
+      },
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "workload-sim"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "workload-sim"
+          },
+          "queryType": "time series",
+          "queryText": "SELECT windows.time, windows.e2e_p50_ms AS p50, windows.e2e_p99_ms AS p99, label FROM windows JOIN runs USING (run_id) WHERE windows.run_id IN (${run:sqlstring}) ORDER BY time",
+          "rawQueryText": "SELECT windows.time, windows.e2e_p50_ms AS p50, windows.e2e_p99_ms AS p99, label FROM windows JOIN runs USING (run_id) WHERE windows.run_id IN (${run:sqlstring}) ORDER BY time",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "displayName": "${__field.name} \u00b7 ${__field.labels.label}",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "spanNulls": true,
+            "showPoints": "never",
+            "pointSize": 4,
+            "fillOpacity": 0,
+            "lineInterpolation": "linear",
+            "axisLabel": "end-to-end latency",
+            "scaleDistribution": {
+              "type": "log",
+              "log": 10
+            }
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 11
+    },
+    {
+      "type": "timeseries",
+      "title": "Normalized latency: p50 and p99 per time window (ms per output token, log scale)",
+      "description": "e2e \u00f7 output tokens, requests grouped by arrival time.",
+      "gridPos": {
+        "x": 12,
+        "y": 36,
+        "w": 12,
+        "h": 9
+      },
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "workload-sim"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "workload-sim"
+          },
+          "queryType": "time series",
+          "queryText": "SELECT windows.time, windows.norm_latency_p50_ms AS p50, windows.norm_latency_p99_ms AS p99, label FROM windows JOIN runs USING (run_id) WHERE windows.run_id IN (${run:sqlstring}) ORDER BY time",
+          "rawQueryText": "SELECT windows.time, windows.norm_latency_p50_ms AS p50, windows.norm_latency_p99_ms AS p99, label FROM windows JOIN runs USING (run_id) WHERE windows.run_id IN (${run:sqlstring}) ORDER BY time",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "displayName": "${__field.name} \u00b7 ${__field.labels.label}",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "spanNulls": true,
+            "showPoints": "never",
+            "pointSize": 4,
+            "fillOpacity": 0,
+            "lineInterpolation": "linear",
+            "axisLabel": "latency per output token",
+            "scaleDistribution": {
+              "type": "log",
+              "log": 10
+            }
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 12
+    },
+    {
       "type": "table",
       "title": "Selected runs",
       "description": "",
       "gridPos": {
         "x": 0,
-        "y": 36,
+        "y": 45,
         "w": 24,
         "h": 6
       },
@@ -641,8 +767,8 @@
             "uid": "workload-sim"
           },
           "queryType": "table",
-          "queryText": "SELECT label AS run, scenario, rate AS [rate (req/s)], rep AS repeat,\n  offered_rps AS [offered (req/s)], steady_requests_per_s AS [completed (req/s)],\n  steady_output_tokens_per_s AS [output (tokens/s)],\n  ttft_p50_ms AS [TTFT p50 (ms)], ttft_p99_ms AS [TTFT p99 (ms)], tpot_p50_ms AS [TPOT p50 (ms/token)],\n  tpot_p99_ms AS [TPOT p99 (ms/token)], e2e_p99_ms AS [E2E p99 (ms)],\n  srv_running_mean AS [batch: mean running (requests)], srv_waiting_mean AS [queue: mean waiting (requests)],\n  srv_kv_cache_usage_mean * 100 AS [KV cache used, mean (%)], srv_queue_mean_ms AS [vLLM queue wait, mean (ms)],\n  srv_preemptions AS [preemptions (count)], successes AS [completed (requests)], requests AS [sent (requests)],\n  run_id, experiment, from_ms, to_ms\nFROM runs WHERE experiment = '$experiment' AND run_id IN (${run:sqlstring}) ORDER BY mode, scenario, rate, rep",
-          "rawQueryText": "SELECT label AS run, scenario, rate AS [rate (req/s)], rep AS repeat,\n  offered_rps AS [offered (req/s)], steady_requests_per_s AS [completed (req/s)],\n  steady_output_tokens_per_s AS [output (tokens/s)],\n  ttft_p50_ms AS [TTFT p50 (ms)], ttft_p99_ms AS [TTFT p99 (ms)], tpot_p50_ms AS [TPOT p50 (ms/token)],\n  tpot_p99_ms AS [TPOT p99 (ms/token)], e2e_p99_ms AS [E2E p99 (ms)],\n  srv_running_mean AS [batch: mean running (requests)], srv_waiting_mean AS [queue: mean waiting (requests)],\n  srv_kv_cache_usage_mean * 100 AS [KV cache used, mean (%)], srv_queue_mean_ms AS [vLLM queue wait, mean (ms)],\n  srv_preemptions AS [preemptions (count)], successes AS [completed (requests)], requests AS [sent (requests)],\n  run_id, experiment, from_ms, to_ms\nFROM runs WHERE experiment = '$experiment' AND run_id IN (${run:sqlstring}) ORDER BY mode, scenario, rate, rep",
+          "queryText": "SELECT label AS run, scenario, rate AS [rate (req/s)], rep AS repeat,\n  offered_rps AS [offered (req/s)], steady_requests_per_s AS [completed (req/s)],\n  steady_output_tokens_per_s AS [output (tokens/s)],\n  ttft_mean_ms AS [TTFT mean (ms)],\n  ttft_p50_ms AS [TTFT p50 (ms)],\n  ttft_p90_ms AS [TTFT p90 (ms)],\n  ttft_p95_ms AS [TTFT p95 (ms)],\n  ttft_p99_ms AS [TTFT p99 (ms)],\n  tpot_mean_ms AS [TPOT mean (ms/token)],\n  tpot_p50_ms AS [TPOT p50 (ms/token)],\n  tpot_p90_ms AS [TPOT p90 (ms/token)],\n  tpot_p95_ms AS [TPOT p95 (ms/token)],\n  tpot_p99_ms AS [TPOT p99 (ms/token)],\n  itl_mean_ms AS [ITL mean (ms)],\n  itl_p50_ms AS [ITL p50 (ms)],\n  itl_p90_ms AS [ITL p90 (ms)],\n  itl_p95_ms AS [ITL p95 (ms)],\n  itl_p99_ms AS [ITL p99 (ms)],\n  e2e_mean_ms AS [E2E mean (ms)],\n  e2e_p50_ms AS [E2E p50 (ms)],\n  e2e_p90_ms AS [E2E p90 (ms)],\n  e2e_p95_ms AS [E2E p95 (ms)],\n  e2e_p99_ms AS [E2E p99 (ms)],\n  norm_latency_mean_ms AS [norm. latency mean (ms/token)],\n  norm_latency_p50_ms AS [norm. latency p50 (ms/token)],\n  norm_latency_p90_ms AS [norm. latency p90 (ms/token)],\n  norm_latency_p95_ms AS [norm. latency p95 (ms/token)],\n  norm_latency_p99_ms AS [norm. latency p99 (ms/token)],\n  srv_running_mean AS [batch: mean running (requests)], srv_waiting_mean AS [queue: mean waiting (requests)],\n  srv_waiting_max AS [queue: max waiting (requests)],\n  srv_kv_cache_usage_mean * 100 AS [KV cache used, mean (%)], srv_kv_cache_usage_max * 100 AS [KV cache used, max (%)],\n  srv_preemptions AS [preemptions (count)], srv_queue_mean_ms AS [vLLM queue wait, mean (ms)],\n  [srv_queue_frac_over_1.0s] * 100 AS [waited > 1 s in vLLM queue (%)],\n  srv_prefix_cache_hit_rate * 100 AS [prefix cache hit rate (%)],\n  successes AS [completed (requests)], requests AS [sent (requests)], client_max_lag_ms AS [client max lag (ms)],\n  run_id, experiment, from_ms, to_ms\nFROM runs WHERE experiment = '$experiment' AND run_id IN (${run:sqlstring}) ORDER BY mode, scenario, rate, rep",
+          "rawQueryText": "SELECT label AS run, scenario, rate AS [rate (req/s)], rep AS repeat,\n  offered_rps AS [offered (req/s)], steady_requests_per_s AS [completed (req/s)],\n  steady_output_tokens_per_s AS [output (tokens/s)],\n  ttft_mean_ms AS [TTFT mean (ms)],\n  ttft_p50_ms AS [TTFT p50 (ms)],\n  ttft_p90_ms AS [TTFT p90 (ms)],\n  ttft_p95_ms AS [TTFT p95 (ms)],\n  ttft_p99_ms AS [TTFT p99 (ms)],\n  tpot_mean_ms AS [TPOT mean (ms/token)],\n  tpot_p50_ms AS [TPOT p50 (ms/token)],\n  tpot_p90_ms AS [TPOT p90 (ms/token)],\n  tpot_p95_ms AS [TPOT p95 (ms/token)],\n  tpot_p99_ms AS [TPOT p99 (ms/token)],\n  itl_mean_ms AS [ITL mean (ms)],\n  itl_p50_ms AS [ITL p50 (ms)],\n  itl_p90_ms AS [ITL p90 (ms)],\n  itl_p95_ms AS [ITL p95 (ms)],\n  itl_p99_ms AS [ITL p99 (ms)],\n  e2e_mean_ms AS [E2E mean (ms)],\n  e2e_p50_ms AS [E2E p50 (ms)],\n  e2e_p90_ms AS [E2E p90 (ms)],\n  e2e_p95_ms AS [E2E p95 (ms)],\n  e2e_p99_ms AS [E2E p99 (ms)],\n  norm_latency_mean_ms AS [norm. latency mean (ms/token)],\n  norm_latency_p50_ms AS [norm. latency p50 (ms/token)],\n  norm_latency_p90_ms AS [norm. latency p90 (ms/token)],\n  norm_latency_p95_ms AS [norm. latency p95 (ms/token)],\n  norm_latency_p99_ms AS [norm. latency p99 (ms/token)],\n  srv_running_mean AS [batch: mean running (requests)], srv_waiting_mean AS [queue: mean waiting (requests)],\n  srv_waiting_max AS [queue: max waiting (requests)],\n  srv_kv_cache_usage_mean * 100 AS [KV cache used, mean (%)], srv_kv_cache_usage_max * 100 AS [KV cache used, max (%)],\n  srv_preemptions AS [preemptions (count)], srv_queue_mean_ms AS [vLLM queue wait, mean (ms)],\n  [srv_queue_frac_over_1.0s] * 100 AS [waited > 1 s in vLLM queue (%)],\n  srv_prefix_cache_hit_rate * 100 AS [prefix cache hit rate (%)],\n  successes AS [completed (requests)], requests AS [sent (requests)], client_max_lag_ms AS [client max lag (ms)],\n  run_id, experiment, from_ms, to_ms\nFROM runs WHERE experiment = '$experiment' AND run_id IN (${run:sqlstring}) ORDER BY mode, scenario, rate, rep",
           "timeColumns": [
             "time"
           ]
@@ -739,7 +865,67 @@
           {
             "matcher": {
               "id": "byName",
+              "options": "TTFT mean (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 146
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
               "options": "TTFT p50 (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 138
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "TTFT p90 (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 138
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "TTFT p95 (ms)"
             },
             "properties": [
               {
@@ -779,7 +965,67 @@
           {
             "matcher": {
               "id": "byName",
+              "options": "TPOT mean (ms/token)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 194
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
               "options": "TPOT p50 (ms/token)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 186
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "TPOT p90 (ms/token)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 186
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "TPOT p95 (ms/token)"
             },
             "properties": [
               {
@@ -819,6 +1065,186 @@
           {
             "matcher": {
               "id": "byName",
+              "options": "ITL mean (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 138
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ITL p50 (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ITL p90 (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ITL p95 (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ITL p99 (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "E2E mean (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 138
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "E2E p50 (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "E2E p90 (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "E2E p95 (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
               "options": "E2E p99 (ms)"
             },
             "properties": [
@@ -833,6 +1259,106 @@
               {
                 "id": "custom.minWidth",
                 "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "norm. latency mean (ms/token)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 266
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "norm. latency p50 (ms/token)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 258
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "norm. latency p90 (ms/token)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 258
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "norm. latency p95 (ms/token)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 258
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "norm. latency p99 (ms/token)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 258
               }
             ]
           },
@@ -879,6 +1405,26 @@
           {
             "matcher": {
               "id": "byName",
+              "options": "queue: max waiting (requests)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 266
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
               "options": "KV cache used, mean (%)"
             },
             "properties": [
@@ -893,6 +1439,46 @@
               {
                 "id": "custom.minWidth",
                 "value": 218
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "KV cache used, max (%)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 210
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "preemptions (count)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 186
               }
             ]
           },
@@ -919,7 +1505,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "preemptions (count)"
+              "options": "waited > 1 s in vLLM queue (%)"
             },
             "properties": [
               {
@@ -928,11 +1514,31 @@
               },
               {
                 "id": "decimals",
-                "value": 0
+                "value": 1
               },
               {
                 "id": "custom.minWidth",
-                "value": 186
+                "value": 274
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "prefix cache hit rate (%)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 234
               }
             ]
           },
@@ -973,6 +1579,26 @@
               {
                 "id": "custom.minWidth",
                 "value": 154
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "client max lag (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 186
               }
             ]
           },
@@ -1113,7 +1739,7 @@
           "show": false
         }
       },
-      "id": 11
+      "id": 13
     }
   ],
   "annotations": {

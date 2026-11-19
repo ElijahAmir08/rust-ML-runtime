@@ -32,8 +32,8 @@ docker compose run --rm loader
 
 | Dashboard | Shows |
 |---|---|
-| **overview** | One row per scenario: throughput (offered vs completed), TTFT, TPOT and vLLM's batch/queue at each offered rate, as the median over repeats. A table of every run at the bottom; click a run's name to open it in *run detail*. |
-| **run detail** | Selected runs over time: arrivals and completions per second, `num_requests_running` (batch), `num_requests_waiting` (queue), KV-cache usage, TTFT/TPOT percentiles per 10 s window, and one dot per request for TTFT and end-to-end latency. Select several runs in *Run* to overlay them. |
+| **overview** | One section per scenario, each value the median over repeats at each offered rate: throughput (requests and tokens/s), vLLM batch/queue and queue wait; TTFT, TPOT, ITL, E2E and normalized latency (mean, p50, p99); KV-cache use (mean, max), preemptions and the share of requests queued > 1 s. A table of every run at the bottom with every summary metric (incl. p90/p95); click a run's name to open it in *run detail*. |
+| **run detail** | Selected runs over time: arrivals and completions per second, `num_requests_running` (batch), `num_requests_waiting` (queue), KV-cache usage, TTFT/TPOT/E2E/normalized-latency percentiles per 10 s window, and one dot per request for TTFT and end-to-end latency. Select several runs in *Run* to overlay them. |
 
 **Time axis.** Sweep runs are placed at 2000-01-01 00:00 UTC, so the axis reads as elapsed time
 (`00:01:30` = 90 s after the first request) and runs line up when overlaid. The first `warmup`

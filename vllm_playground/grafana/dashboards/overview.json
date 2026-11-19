@@ -78,7 +78,7 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "**How to use.** Each row below is one scenario's rate sweep: bars are the **median over repeats**\nat each offered rate. The table at the bottom lists every run; click a run name to open it in\n**vLLM run detail** and watch load, batch size, queue depth, KV cache and latency change *during* the run.\nSelect several runs there to overlay them (sweep runs share an elapsed-time axis: 00:01:30 = 90 s in).\n\nEvery bar chart: **x-axis = offered load (requests per second)**, y-axis label and unit on each chart.\n*completed* is steady-state throughput (requests finished inside the measured interval \u00f7 its length); when the\nserver keeps up it matches *offered*. Batch / queue / KV cache are vLLM's own gauges (`num_requests_running`,\n`num_requests_waiting`, `kv_cache_usage_perc`), averaged over the measured interval."
+        "content": "**How to use.** Each row below is one scenario's rate sweep: bars are the **median over repeats**\nat each offered rate. Latency charts show mean (grey), p50 (light) and p99 (dark); p90/p95 are in the table. The table at the bottom lists every run; click a run name to open it in\n**vLLM run detail** and watch load, batch size, queue depth, KV cache and latency change *during* the run.\nSelect several runs there to overlay them (sweep runs share an elapsed-time axis: 00:01:30 = 90 s in).\n\nEvery bar chart: **x-axis = offered load (requests per second)**, y-axis label and unit on each chart.\n*completed* is steady-state throughput (requests finished inside the measured interval \u00f7 its length); when the\nserver keeps up it matches *offered*. Batch / queue / KV cache are vLLM's own gauges (`num_requests_running`,\n`num_requests_waiting`, `kv_cache_usage_perc`), averaged over the measured interval."
       },
       "id": 1
     },
@@ -201,8 +201,8 @@
     },
     {
       "type": "barchart",
-      "title": "Time to first token: p50 and p99 (log scale)",
-      "description": "Log scale. Includes queueing + prefill.",
+      "title": "Output throughput (tokens/s)",
+      "description": "Output tokens streamed inside the measured interval \u00f7 its length.",
       "gridPos": {
         "x": 6,
         "y": 5,
@@ -221,8 +221,8 @@
             "uid": "workload-sim"
           },
           "queryType": "table",
-          "queryText": "SELECT printf('%g req/s', rate) AS rate, ttft_p50_ms_med AS p50, ttft_p99_ms_med AS p99 FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
-          "rawQueryText": "SELECT printf('%g req/s', rate) AS rate, ttft_p50_ms_med AS p50, ttft_p99_ms_med AS p99 FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
+          "queryText": "SELECT printf('%g req/s', rate) AS rate, steady_output_tokens_per_s_med AS [output tokens/s] FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
+          "rawQueryText": "SELECT printf('%g req/s', rate) AS rate, steady_output_tokens_per_s_med AS [output tokens/s] FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
           "timeColumns": [
             "time"
           ]
@@ -233,41 +233,22 @@
           "custom": {
             "fillOpacity": 85,
             "lineWidth": 0,
-            "axisLabel": "time to first token",
-            "scaleDistribution": {
-              "type": "log",
-              "log": 10
-            }
+            "axisLabel": "output tokens per second"
           },
-          "unit": "ms"
+          "unit": "none"
         },
         "overrides": [
           {
             "matcher": {
               "id": "byName",
-              "options": "p50"
+              "options": "output tokens/s"
             },
             "properties": [
               {
                 "id": "color",
                 "value": {
                   "mode": "fixed",
-                  "fixedColor": "#60a5fa"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "p99"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#1d4ed8"
+                  "fixedColor": "#2563eb"
                 }
               }
             ]
@@ -308,113 +289,10 @@
     },
     {
       "type": "barchart",
-      "title": "Time per output token: p50, p99 (ms/token)",
-      "description": "(e2e - ttft) / (tokens - 1). Grows when prefill chunks share steps with decodes.",
-      "gridPos": {
-        "x": 12,
-        "y": 5,
-        "w": 6,
-        "h": 8
-      },
-      "datasource": {
-        "type": "frser-sqlite-datasource",
-        "uid": "workload-sim"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "frser-sqlite-datasource",
-            "uid": "workload-sim"
-          },
-          "queryType": "table",
-          "queryText": "SELECT printf('%g req/s', rate) AS rate, tpot_p50_ms_med AS p50, tpot_p99_ms_med AS p99 FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
-          "rawQueryText": "SELECT printf('%g req/s', rate) AS rate, tpot_p50_ms_med AS p50, tpot_p99_ms_med AS p99 FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
-          "timeColumns": [
-            "time"
-          ]
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "fillOpacity": 85,
-            "lineWidth": 0,
-            "axisLabel": "time per output token"
-          },
-          "unit": "ms"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "p50"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#5eead4"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "p99"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "fixed",
-                  "fixedColor": "#0f766e"
-                }
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "rate"
-            },
-            "properties": [
-              {
-                "id": "custom.axisLabel",
-                "value": "offered load (requests per second)"
-              }
-            ]
-          }
-        ]
-      },
-      "options": {
-        "xField": "rate",
-        "orientation": "vertical",
-        "groupWidth": 0.75,
-        "barWidth": 0.9,
-        "showValue": "never",
-        "stacking": "none",
-        "xTickLabelRotation": 0,
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        }
-      },
-      "id": 5
-    },
-    {
-      "type": "barchart",
       "title": "vLLM batch and queue: mean number of requests",
       "description": "",
       "gridPos": {
-        "x": 18,
+        "x": 12,
         "y": 5,
         "w": 6,
         "h": 8
@@ -510,20 +388,989 @@
           "sort": "none"
         }
       },
+      "id": 5
+    },
+    {
+      "type": "barchart",
+      "title": "vLLM queue wait: mean (ms)",
+      "description": "Mean time from arriving at vLLM to first being scheduled (includes warmup requests).",
+      "gridPos": {
+        "x": 18,
+        "y": 5,
+        "w": 6,
+        "h": 8
+      },
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "workload-sim"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "workload-sim"
+          },
+          "queryType": "table",
+          "queryText": "SELECT printf('%g req/s', rate) AS rate, srv_queue_mean_ms_med AS [mean wait] FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
+          "rawQueryText": "SELECT printf('%g req/s', rate) AS rate, srv_queue_mean_ms_med AS [mean wait] FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 85,
+            "lineWidth": 0,
+            "axisLabel": "time in vLLM's queue"
+          },
+          "unit": "ms"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean wait"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#be123c"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rate"
+            },
+            "properties": [
+              {
+                "id": "custom.axisLabel",
+                "value": "offered load (requests per second)"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "xField": "rate",
+        "orientation": "vertical",
+        "groupWidth": 0.75,
+        "barWidth": 0.9,
+        "showValue": "never",
+        "stacking": "none",
+        "xTickLabelRotation": 0,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
       "id": 6
+    },
+    {
+      "type": "barchart",
+      "title": "Time to first token: mean, p50, p99 (log scale)",
+      "description": "Arrival \u2192 first token. Queue wait + prefill.",
+      "gridPos": {
+        "x": 0,
+        "y": 13,
+        "w": 6,
+        "h": 8
+      },
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "workload-sim"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "workload-sim"
+          },
+          "queryType": "table",
+          "queryText": "SELECT printf('%g req/s', rate) AS rate, ttft_mean_ms_med AS mean, ttft_p50_ms_med AS p50, ttft_p99_ms_med AS p99 FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
+          "rawQueryText": "SELECT printf('%g req/s', rate) AS rate, ttft_mean_ms_med AS mean, ttft_p50_ms_med AS p50, ttft_p99_ms_med AS p99 FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 85,
+            "lineWidth": 0,
+            "axisLabel": "time to first token",
+            "scaleDistribution": {
+              "type": "log",
+              "log": 10
+            }
+          },
+          "unit": "ms"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#94a3b8"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "p50"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#60a5fa"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "p99"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#1d4ed8"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rate"
+            },
+            "properties": [
+              {
+                "id": "custom.axisLabel",
+                "value": "offered load (requests per second)"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "xField": "rate",
+        "orientation": "vertical",
+        "groupWidth": 0.75,
+        "barWidth": 0.9,
+        "showValue": "never",
+        "stacking": "none",
+        "xTickLabelRotation": 0,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "id": 7
+    },
+    {
+      "type": "barchart",
+      "title": "Time per output token: mean, p50, p99 (ms/token)",
+      "description": "Per request: (e2e - ttft) / (tokens - 1), the average gap between its tokens.",
+      "gridPos": {
+        "x": 6,
+        "y": 13,
+        "w": 6,
+        "h": 8
+      },
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "workload-sim"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "workload-sim"
+          },
+          "queryType": "table",
+          "queryText": "SELECT printf('%g req/s', rate) AS rate, tpot_mean_ms_med AS mean, tpot_p50_ms_med AS p50, tpot_p99_ms_med AS p99 FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
+          "rawQueryText": "SELECT printf('%g req/s', rate) AS rate, tpot_mean_ms_med AS mean, tpot_p50_ms_med AS p50, tpot_p99_ms_med AS p99 FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 85,
+            "lineWidth": 0,
+            "axisLabel": "time per output token"
+          },
+          "unit": "ms"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#94a3b8"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "p50"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#5eead4"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "p99"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#0f766e"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rate"
+            },
+            "properties": [
+              {
+                "id": "custom.axisLabel",
+                "value": "offered load (requests per second)"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "xField": "rate",
+        "orientation": "vertical",
+        "groupWidth": 0.75,
+        "barWidth": 0.9,
+        "showValue": "never",
+        "stacking": "none",
+        "xTickLabelRotation": 0,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "id": 8
+    },
+    {
+      "type": "barchart",
+      "title": "Inter-token latency: mean, p50, p99 (ms)",
+      "description": "Every gap between two consecutive tokens of a request, pooled (\u2248 one engine step). p99 = decode stalls: a big prefill in the same step, or a preemption.",
+      "gridPos": {
+        "x": 12,
+        "y": 13,
+        "w": 6,
+        "h": 8
+      },
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "workload-sim"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "workload-sim"
+          },
+          "queryType": "table",
+          "queryText": "SELECT printf('%g req/s', rate) AS rate, itl_mean_ms_med AS mean, itl_p50_ms_med AS p50, itl_p99_ms_med AS p99 FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
+          "rawQueryText": "SELECT printf('%g req/s', rate) AS rate, itl_mean_ms_med AS mean, itl_p50_ms_med AS p50, itl_p99_ms_med AS p99 FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 85,
+            "lineWidth": 0,
+            "axisLabel": "gap between tokens"
+          },
+          "unit": "ms"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#94a3b8"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "p50"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#c4b5fd"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "p99"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#7c3aed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rate"
+            },
+            "properties": [
+              {
+                "id": "custom.axisLabel",
+                "value": "offered load (requests per second)"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "xField": "rate",
+        "orientation": "vertical",
+        "groupWidth": 0.75,
+        "barWidth": 0.9,
+        "showValue": "never",
+        "stacking": "none",
+        "xTickLabelRotation": 0,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "id": 9
+    },
+    {
+      "type": "barchart",
+      "title": "End-to-end latency: mean, p50, p99 (log scale)",
+      "description": "Arrival \u2192 last token. Dominated by output length: compare within a scenario.",
+      "gridPos": {
+        "x": 18,
+        "y": 13,
+        "w": 6,
+        "h": 8
+      },
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "workload-sim"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "workload-sim"
+          },
+          "queryType": "table",
+          "queryText": "SELECT printf('%g req/s', rate) AS rate, e2e_mean_ms_med AS mean, e2e_p50_ms_med AS p50, e2e_p99_ms_med AS p99 FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
+          "rawQueryText": "SELECT printf('%g req/s', rate) AS rate, e2e_mean_ms_med AS mean, e2e_p50_ms_med AS p50, e2e_p99_ms_med AS p99 FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 85,
+            "lineWidth": 0,
+            "axisLabel": "end-to-end latency",
+            "scaleDistribution": {
+              "type": "log",
+              "log": 10
+            }
+          },
+          "unit": "ms"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#94a3b8"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "p50"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#fdba74"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "p99"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#9a3412"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rate"
+            },
+            "properties": [
+              {
+                "id": "custom.axisLabel",
+                "value": "offered load (requests per second)"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "xField": "rate",
+        "orientation": "vertical",
+        "groupWidth": 0.75,
+        "barWidth": 0.9,
+        "showValue": "never",
+        "stacking": "none",
+        "xTickLabelRotation": 0,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "id": 10
+    },
+    {
+      "type": "barchart",
+      "title": "Normalized latency: mean, p50, p99 (ms per output token, log scale)",
+      "description": "e2e \u00f7 output tokens (the vLLM paper's metric); comparable across scenarios.",
+      "gridPos": {
+        "x": 0,
+        "y": 21,
+        "w": 6,
+        "h": 8
+      },
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "workload-sim"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "workload-sim"
+          },
+          "queryType": "table",
+          "queryText": "SELECT printf('%g req/s', rate) AS rate, norm_latency_mean_ms_med AS mean, norm_latency_p50_ms_med AS p50, norm_latency_p99_ms_med AS p99 FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
+          "rawQueryText": "SELECT printf('%g req/s', rate) AS rate, norm_latency_mean_ms_med AS mean, norm_latency_p50_ms_med AS p50, norm_latency_p99_ms_med AS p99 FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 85,
+            "lineWidth": 0,
+            "axisLabel": "latency per output token",
+            "scaleDistribution": {
+              "type": "log",
+              "log": 10
+            }
+          },
+          "unit": "ms"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#94a3b8"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "p50"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#f0abfc"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "p99"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#a21caf"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rate"
+            },
+            "properties": [
+              {
+                "id": "custom.axisLabel",
+                "value": "offered load (requests per second)"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "xField": "rate",
+        "orientation": "vertical",
+        "groupWidth": 0.75,
+        "barWidth": 0.9,
+        "showValue": "never",
+        "stacking": "none",
+        "xTickLabelRotation": 0,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "id": 11
+    },
+    {
+      "type": "barchart",
+      "title": "KV cache used: mean and max (%)",
+      "description": "Near 100% vLLM must preempt running requests.",
+      "gridPos": {
+        "x": 6,
+        "y": 21,
+        "w": 6,
+        "h": 8
+      },
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "workload-sim"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "workload-sim"
+          },
+          "queryType": "table",
+          "queryText": "SELECT printf('%g req/s', rate) AS rate, srv_kv_cache_usage_mean_med * 100 AS mean, srv_kv_cache_usage_max_med * 100 AS max FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
+          "rawQueryText": "SELECT printf('%g req/s', rate) AS rate, srv_kv_cache_usage_mean_med * 100 AS mean, srv_kv_cache_usage_max_med * 100 AS max FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 85,
+            "lineWidth": 0,
+            "axisLabel": "KV-cache blocks in use (%)"
+          },
+          "unit": "percent"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#fdba74"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "max"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#c2410c"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rate"
+            },
+            "properties": [
+              {
+                "id": "custom.axisLabel",
+                "value": "offered load (requests per second)"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "xField": "rate",
+        "orientation": "vertical",
+        "groupWidth": 0.75,
+        "barWidth": 0.9,
+        "showValue": "never",
+        "stacking": "none",
+        "xTickLabelRotation": 0,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "id": 12
+    },
+    {
+      "type": "barchart",
+      "title": "Preemptions (count per run)",
+      "description": "Requests evicted for lack of KV blocks and recomputed later. > 0 = real KV-cache pressure.",
+      "gridPos": {
+        "x": 12,
+        "y": 21,
+        "w": 6,
+        "h": 8
+      },
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "workload-sim"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "workload-sim"
+          },
+          "queryType": "table",
+          "queryText": "SELECT printf('%g req/s', rate) AS rate, srv_preemptions_med AS preemptions FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
+          "rawQueryText": "SELECT printf('%g req/s', rate) AS rate, srv_preemptions_med AS preemptions FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 85,
+            "lineWidth": 0,
+            "axisLabel": "preemptions"
+          },
+          "unit": "none"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "preemptions"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#be123c"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rate"
+            },
+            "properties": [
+              {
+                "id": "custom.axisLabel",
+                "value": "offered load (requests per second)"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "xField": "rate",
+        "orientation": "vertical",
+        "groupWidth": 0.75,
+        "barWidth": 0.9,
+        "showValue": "never",
+        "stacking": "none",
+        "xTickLabelRotation": 0,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "id": 13
+    },
+    {
+      "type": "barchart",
+      "title": "Requests that waited > 1 s in vLLM's queue (%)",
+      "description": "From vLLM's queue-time histogram (includes warmup requests).",
+      "gridPos": {
+        "x": 18,
+        "y": 21,
+        "w": 6,
+        "h": 8
+      },
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "workload-sim"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "workload-sim"
+          },
+          "queryType": "table",
+          "queryText": "SELECT printf('%g req/s', rate) AS rate, [srv_queue_frac_over_1.0s_med] * 100 AS [waited > 1 s] FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
+          "rawQueryText": "SELECT printf('%g req/s', rate) AS rate, [srv_queue_frac_over_1.0s_med] * 100 AS [waited > 1 s] FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 85,
+            "lineWidth": 0,
+            "axisLabel": "requests (%)"
+          },
+          "unit": "percent"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "waited > 1 s"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#be123c"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rate"
+            },
+            "properties": [
+              {
+                "id": "custom.axisLabel",
+                "value": "offered load (requests per second)"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "xField": "rate",
+        "orientation": "vertical",
+        "groupWidth": 0.75,
+        "barWidth": 0.9,
+        "showValue": "never",
+        "stacking": "none",
+        "xTickLabelRotation": 0,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "id": 14
     },
     {
       "type": "row",
       "title": "All runs (click a run to open it over time)",
       "gridPos": {
         "x": 0,
-        "y": 13,
+        "y": 29,
         "w": 24,
         "h": 1
       },
       "collapsed": false,
       "panels": [],
-      "id": 7
+      "id": 15
     },
     {
       "type": "table",
@@ -531,7 +1378,7 @@
       "description": "",
       "gridPos": {
         "x": 0,
-        "y": 14,
+        "y": 30,
         "w": 24,
         "h": 14
       },
@@ -547,8 +1394,8 @@
             "uid": "workload-sim"
           },
           "queryType": "table",
-          "queryText": "SELECT label AS run, scenario, rate AS [rate (req/s)], rep AS repeat,\n  offered_rps AS [offered (req/s)], steady_requests_per_s AS [completed (req/s)],\n  steady_output_tokens_per_s AS [output (tokens/s)],\n  ttft_p50_ms AS [TTFT p50 (ms)], ttft_p99_ms AS [TTFT p99 (ms)], tpot_p50_ms AS [TPOT p50 (ms/token)],\n  tpot_p99_ms AS [TPOT p99 (ms/token)], e2e_p99_ms AS [E2E p99 (ms)],\n  srv_running_mean AS [batch: mean running (requests)], srv_waiting_mean AS [queue: mean waiting (requests)],\n  srv_kv_cache_usage_mean * 100 AS [KV cache used, mean (%)], srv_queue_mean_ms AS [vLLM queue wait, mean (ms)],\n  srv_preemptions AS [preemptions (count)], successes AS [completed (requests)], requests AS [sent (requests)],\n  run_id, experiment, from_ms, to_ms\nFROM runs WHERE experiment = '$experiment'  ORDER BY mode, scenario, rate, rep",
-          "rawQueryText": "SELECT label AS run, scenario, rate AS [rate (req/s)], rep AS repeat,\n  offered_rps AS [offered (req/s)], steady_requests_per_s AS [completed (req/s)],\n  steady_output_tokens_per_s AS [output (tokens/s)],\n  ttft_p50_ms AS [TTFT p50 (ms)], ttft_p99_ms AS [TTFT p99 (ms)], tpot_p50_ms AS [TPOT p50 (ms/token)],\n  tpot_p99_ms AS [TPOT p99 (ms/token)], e2e_p99_ms AS [E2E p99 (ms)],\n  srv_running_mean AS [batch: mean running (requests)], srv_waiting_mean AS [queue: mean waiting (requests)],\n  srv_kv_cache_usage_mean * 100 AS [KV cache used, mean (%)], srv_queue_mean_ms AS [vLLM queue wait, mean (ms)],\n  srv_preemptions AS [preemptions (count)], successes AS [completed (requests)], requests AS [sent (requests)],\n  run_id, experiment, from_ms, to_ms\nFROM runs WHERE experiment = '$experiment'  ORDER BY mode, scenario, rate, rep",
+          "queryText": "SELECT label AS run, scenario, rate AS [rate (req/s)], rep AS repeat,\n  offered_rps AS [offered (req/s)], steady_requests_per_s AS [completed (req/s)],\n  steady_output_tokens_per_s AS [output (tokens/s)],\n  ttft_mean_ms AS [TTFT mean (ms)],\n  ttft_p50_ms AS [TTFT p50 (ms)],\n  ttft_p90_ms AS [TTFT p90 (ms)],\n  ttft_p95_ms AS [TTFT p95 (ms)],\n  ttft_p99_ms AS [TTFT p99 (ms)],\n  tpot_mean_ms AS [TPOT mean (ms/token)],\n  tpot_p50_ms AS [TPOT p50 (ms/token)],\n  tpot_p90_ms AS [TPOT p90 (ms/token)],\n  tpot_p95_ms AS [TPOT p95 (ms/token)],\n  tpot_p99_ms AS [TPOT p99 (ms/token)],\n  itl_mean_ms AS [ITL mean (ms)],\n  itl_p50_ms AS [ITL p50 (ms)],\n  itl_p90_ms AS [ITL p90 (ms)],\n  itl_p95_ms AS [ITL p95 (ms)],\n  itl_p99_ms AS [ITL p99 (ms)],\n  e2e_mean_ms AS [E2E mean (ms)],\n  e2e_p50_ms AS [E2E p50 (ms)],\n  e2e_p90_ms AS [E2E p90 (ms)],\n  e2e_p95_ms AS [E2E p95 (ms)],\n  e2e_p99_ms AS [E2E p99 (ms)],\n  norm_latency_mean_ms AS [norm. latency mean (ms/token)],\n  norm_latency_p50_ms AS [norm. latency p50 (ms/token)],\n  norm_latency_p90_ms AS [norm. latency p90 (ms/token)],\n  norm_latency_p95_ms AS [norm. latency p95 (ms/token)],\n  norm_latency_p99_ms AS [norm. latency p99 (ms/token)],\n  srv_running_mean AS [batch: mean running (requests)], srv_waiting_mean AS [queue: mean waiting (requests)],\n  srv_waiting_max AS [queue: max waiting (requests)],\n  srv_kv_cache_usage_mean * 100 AS [KV cache used, mean (%)], srv_kv_cache_usage_max * 100 AS [KV cache used, max (%)],\n  srv_preemptions AS [preemptions (count)], srv_queue_mean_ms AS [vLLM queue wait, mean (ms)],\n  [srv_queue_frac_over_1.0s] * 100 AS [waited > 1 s in vLLM queue (%)],\n  srv_prefix_cache_hit_rate * 100 AS [prefix cache hit rate (%)],\n  successes AS [completed (requests)], requests AS [sent (requests)], client_max_lag_ms AS [client max lag (ms)],\n  run_id, experiment, from_ms, to_ms\nFROM runs WHERE experiment = '$experiment'  ORDER BY mode, scenario, rate, rep",
+          "rawQueryText": "SELECT label AS run, scenario, rate AS [rate (req/s)], rep AS repeat,\n  offered_rps AS [offered (req/s)], steady_requests_per_s AS [completed (req/s)],\n  steady_output_tokens_per_s AS [output (tokens/s)],\n  ttft_mean_ms AS [TTFT mean (ms)],\n  ttft_p50_ms AS [TTFT p50 (ms)],\n  ttft_p90_ms AS [TTFT p90 (ms)],\n  ttft_p95_ms AS [TTFT p95 (ms)],\n  ttft_p99_ms AS [TTFT p99 (ms)],\n  tpot_mean_ms AS [TPOT mean (ms/token)],\n  tpot_p50_ms AS [TPOT p50 (ms/token)],\n  tpot_p90_ms AS [TPOT p90 (ms/token)],\n  tpot_p95_ms AS [TPOT p95 (ms/token)],\n  tpot_p99_ms AS [TPOT p99 (ms/token)],\n  itl_mean_ms AS [ITL mean (ms)],\n  itl_p50_ms AS [ITL p50 (ms)],\n  itl_p90_ms AS [ITL p90 (ms)],\n  itl_p95_ms AS [ITL p95 (ms)],\n  itl_p99_ms AS [ITL p99 (ms)],\n  e2e_mean_ms AS [E2E mean (ms)],\n  e2e_p50_ms AS [E2E p50 (ms)],\n  e2e_p90_ms AS [E2E p90 (ms)],\n  e2e_p95_ms AS [E2E p95 (ms)],\n  e2e_p99_ms AS [E2E p99 (ms)],\n  norm_latency_mean_ms AS [norm. latency mean (ms/token)],\n  norm_latency_p50_ms AS [norm. latency p50 (ms/token)],\n  norm_latency_p90_ms AS [norm. latency p90 (ms/token)],\n  norm_latency_p95_ms AS [norm. latency p95 (ms/token)],\n  norm_latency_p99_ms AS [norm. latency p99 (ms/token)],\n  srv_running_mean AS [batch: mean running (requests)], srv_waiting_mean AS [queue: mean waiting (requests)],\n  srv_waiting_max AS [queue: max waiting (requests)],\n  srv_kv_cache_usage_mean * 100 AS [KV cache used, mean (%)], srv_kv_cache_usage_max * 100 AS [KV cache used, max (%)],\n  srv_preemptions AS [preemptions (count)], srv_queue_mean_ms AS [vLLM queue wait, mean (ms)],\n  [srv_queue_frac_over_1.0s] * 100 AS [waited > 1 s in vLLM queue (%)],\n  srv_prefix_cache_hit_rate * 100 AS [prefix cache hit rate (%)],\n  successes AS [completed (requests)], requests AS [sent (requests)], client_max_lag_ms AS [client max lag (ms)],\n  run_id, experiment, from_ms, to_ms\nFROM runs WHERE experiment = '$experiment'  ORDER BY mode, scenario, rate, rep",
           "timeColumns": [
             "time"
           ]
@@ -645,7 +1492,67 @@
           {
             "matcher": {
               "id": "byName",
+              "options": "TTFT mean (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 146
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
               "options": "TTFT p50 (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 138
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "TTFT p90 (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 138
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "TTFT p95 (ms)"
             },
             "properties": [
               {
@@ -685,7 +1592,67 @@
           {
             "matcher": {
               "id": "byName",
+              "options": "TPOT mean (ms/token)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 194
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
               "options": "TPOT p50 (ms/token)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 186
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "TPOT p90 (ms/token)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 186
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "TPOT p95 (ms/token)"
             },
             "properties": [
               {
@@ -725,6 +1692,186 @@
           {
             "matcher": {
               "id": "byName",
+              "options": "ITL mean (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 138
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ITL p50 (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ITL p90 (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ITL p95 (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ITL p99 (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "E2E mean (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 138
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "E2E p50 (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "E2E p90 (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "E2E p95 (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
               "options": "E2E p99 (ms)"
             },
             "properties": [
@@ -739,6 +1886,106 @@
               {
                 "id": "custom.minWidth",
                 "value": 130
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "norm. latency mean (ms/token)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 266
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "norm. latency p50 (ms/token)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 258
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "norm. latency p90 (ms/token)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 258
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "norm. latency p95 (ms/token)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 258
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "norm. latency p99 (ms/token)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 258
               }
             ]
           },
@@ -785,6 +2032,26 @@
           {
             "matcher": {
               "id": "byName",
+              "options": "queue: max waiting (requests)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 266
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
               "options": "KV cache used, mean (%)"
             },
             "properties": [
@@ -799,6 +2066,46 @@
               {
                 "id": "custom.minWidth",
                 "value": 218
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "KV cache used, max (%)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 210
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "preemptions (count)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 0
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 186
               }
             ]
           },
@@ -825,7 +2132,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "preemptions (count)"
+              "options": "waited > 1 s in vLLM queue (%)"
             },
             "properties": [
               {
@@ -834,11 +2141,31 @@
               },
               {
                 "id": "decimals",
-                "value": 0
+                "value": 1
               },
               {
                 "id": "custom.minWidth",
-                "value": 186
+                "value": 274
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "prefix cache hit rate (%)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 234
               }
             ]
           },
@@ -879,6 +2206,26 @@
               {
                 "id": "custom.minWidth",
                 "value": 154
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "client max lag (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 186
               }
             ]
           },
@@ -1036,7 +2383,7 @@
           "show": false
         }
       },
-      "id": 8
+      "id": 16
     }
   ],
   "annotations": {
