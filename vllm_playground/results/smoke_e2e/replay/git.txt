@@ -1,0 +1,15 @@
+submitted: 2026-11-05T20:06:08-08:00 from pod.cnsi.ucsb.edu
+rust-ML-runtime: f1813b6, uncommitted files in workload_sim/ bench/ slurms/ experiments/ run.sh: 12
+   M vllm_playground/workload_sim/__init__.py
+   M vllm_playground/workload_sim/__main__.py
+   M vllm_playground/workload_sim/client.py
+   M vllm_playground/workload_sim/load_generator.py
+   M vllm_playground/workload_sim/metrics.py
+   M vllm_playground/workload_sim/request.py
+   M vllm_playground/workload_sim/workload.py
+  ?? vllm_playground/bench/
+  ?? vllm_playground/experiments/
+  ?? vllm_playground/run.sh
+  ?? vllm_playground/slurms/
+  ?? vllm_playground/workload_sim/server_metrics.py
+vllm: a26e8dc7ff

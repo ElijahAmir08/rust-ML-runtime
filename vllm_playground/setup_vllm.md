@@ -17,5 +17,18 @@ export TORCH_CUDA_ARCH_LIST="7.0"
 uv pip install -e . --no-build-isolation`
 ```
 
+### Optional: NIXL, for disaggregated prefill/decode (P/D)
+vLLM's `NixlConnector` moves the KV cache from the prefill GPU to the decode GPU with NIXL. Install it
+**into the vllm venv** (with it activated, or with `VIRTUAL_ENV` pointing at it):
+```
+uv pip install "nixl>=0.7.1,<0.10.0"
+```
+- The version range comes from `requirements/kv_connectors.txt`. It adds just `nixl` and `nixl-cu12`
+  (which bundles its own CUDA-enabled UCX); it leaves torch alone.
+- Don't install it into a fresh/empty venv: there the resolver also pulls the newest torch (CUDA 13).
+- Check it: `python -c "import nixl._api"`, then on a GPU node from `vllm_playground/`:
+  `mkdir -p results/nixl_check && sbatch slurms/nixl_check.slurm` (2-GPU transfer test, see `bench/nixl_check.py`).
+- Remove it: `uv pip uninstall nixl nixl-cu12`.
+
 
 
