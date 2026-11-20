@@ -1,0 +1,8 @@
+(APIServer pid=2053119) INFO 11-20 00:12:30 [utils.py:233] non-default args: {'model_tag': 'Qwen/Qwen2.5-7B-Instruct', 'host': '127.0.0.1', 'port': 39832, 'model': 'Qwen/Qwen2.5-7B-Instruct', 'dtype': 'half', 'max_model_len': 8192, 'async_scheduling': False}
+(APIServer pid=2053119) INFO 11-20 00:12:31 [scheduler.py:231] Chunked prefill is enabled with max_num_batched_tokens=2048.
+(EngineCore pid=2053322) INFO 11-20 00:13:00 [cuda.py:317] Using TRITON_ATTN attention backend out of potential backends: ['TRITON_ATTN', 'FLEX_ATTENTION'].
+(EngineCore pid=2053322) INFO 11-20 00:13:19 [gpu_worker.py:456] Available KV cache memory: 13.61 GiB
+(EngineCore pid=2053322) INFO 11-20 00:13:19 [gpu_worker.py:490] In v0.19, CUDA graph memory profiling will be enabled by default (VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=1), which more accurately accounts for CUDA graph memory during KV cache allocation. To try it now, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=1 and increase --gpu-memory-utilization from 0.9000 to 0.9151 to maintain the same effective KV cache size.
+(EngineCore pid=2053322) INFO 11-20 00:13:19 [kv_cache_utils.py:1316] GPU KV cache size: 254,800 tokens
+(EngineCore pid=2053322) INFO 11-20 00:13:19 [kv_cache_utils.py:1321] Maximum concurrency for 8,192 tokens per request: 31.10x
+(EngineCore pid=2053322) INFO 11-20 00:13:27 [core.py:281] init engine (profile, create kv cache, warmup model) took 18.16 seconds
