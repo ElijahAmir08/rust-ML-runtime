@@ -78,7 +78,7 @@
       },
       "options": {
         "mode": "markdown",
-        "content": "**How to use.** Each row below is one scenario's rate sweep: bars are the **median over repeats**\nat each offered rate. Latency charts show mean (grey), p50 (light) and p99 (dark); p90/p95 are in the table. The table at the bottom lists every run; click a run name to open it in\n**vLLM run detail** and watch load, batch size, queue depth, KV cache and latency change *during* the run.\nSelect several runs there to overlay them (sweep runs share an elapsed-time axis: 00:01:30 = 90 s in).\n\nEvery bar chart: **x-axis = offered load (requests per second)**, y-axis label and unit on each chart.\n*completed* is steady-state throughput (requests finished inside the measured interval \u00f7 its length); when the\nserver keeps up it matches *offered*. Batch / queue / KV cache are vLLM's own gauges (`num_requests_running`,\n`num_requests_waiting`, `kv_cache_usage_perc`), averaged over the measured interval."
+        "content": "**How to use.** Each row below is one scenario's rate sweep: bars are the **median over repeats**\nat each offered rate. Latency charts show mean (grey), p50 (light) and p99 (dark); p90/p95 are in the table. The table at the bottom lists every run; click a run name to open it in\n**vLLM run detail** and watch load, batch size, queue depth, KV cache and latency change *during* the run.\nSelect several runs there to overlay them (sweep runs share an elapsed-time axis: 00:01:30 = 90 s in).\n\nEvery bar chart: **x-axis = offered load (requests per second)**, y-axis label and unit on each chart.\n*completed* is steady-state throughput (requests finished inside the measured interval \u00f7 its length); when the\nserver keeps up it matches *offered*. Batch / queue / KV cache are vLLM's own gauges (`num_requests_running`,\n`num_requests_waiting`, `kv_cache_usage_perc`), averaged over the measured interval. With two GPUs (P/D or\ndata parallel) they are summed over both, so KV cache used goes up to 200%."
       },
       "id": 1
     },
@@ -1360,17 +1360,384 @@
       "id": 14
     },
     {
+      "type": "barchart",
+      "title": "Prefix cache hit rate: new vs resumed requests (%)",
+      "description": "Share of prompt tokens served from the prefix cache. New requests: our prompts are random, so ~0 is expected. Resumed: how much of a preempted request's KV was still cached when it came back (the rest is recomputed). Resumed needs our vLLM fork's counters.",
+      "gridPos": {
+        "x": 0,
+        "y": 29,
+        "w": 6,
+        "h": 8
+      },
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "workload-sim"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "workload-sim"
+          },
+          "queryType": "table",
+          "queryText": "SELECT printf('%g req/s', rate) AS rate, srv_prefix_cache_hit_rate_med * 100 AS [new requests], srv_resume_cache_hit_rate_med * 100 AS [resumed after preemption] FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
+          "rawQueryText": "SELECT printf('%g req/s', rate) AS rate, srv_prefix_cache_hit_rate_med * 100 AS [new requests], srv_resume_cache_hit_rate_med * 100 AS [resumed after preemption] FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 85,
+            "lineWidth": 0,
+            "axisLabel": "prompt tokens found in cache (%)"
+          },
+          "unit": "percent"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "new requests"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#fdba74"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "resumed after preemption"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#c2410c"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rate"
+            },
+            "properties": [
+              {
+                "id": "custom.axisLabel",
+                "value": "offered load (requests per second)"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "xField": "rate",
+        "orientation": "vertical",
+        "groupWidth": 0.75,
+        "barWidth": 0.9,
+        "showValue": "never",
+        "stacking": "none",
+        "xTickLabelRotation": 0,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "id": 15
+    },
+    {
+      "type": "barchart",
+      "title": "Tokens re-queried by requests resuming after preemption",
+      "description": "Prompt + already generated tokens of preempted requests, looked up again when they resume. Times (1 - resumed hit rate) = tokens recomputed.",
+      "gridPos": {
+        "x": 6,
+        "y": 29,
+        "w": 6,
+        "h": 8
+      },
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "workload-sim"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "workload-sim"
+          },
+          "queryType": "table",
+          "queryText": "SELECT printf('%g req/s', rate) AS rate, srv_resume_tokens_med AS [tokens] FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
+          "rawQueryText": "SELECT printf('%g req/s', rate) AS rate, srv_resume_tokens_med AS [tokens] FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 85,
+            "lineWidth": 0,
+            "axisLabel": "tokens"
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "tokens"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#be123c"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rate"
+            },
+            "properties": [
+              {
+                "id": "custom.axisLabel",
+                "value": "offered load (requests per second)"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "xField": "rate",
+        "orientation": "vertical",
+        "groupWidth": 0.75,
+        "barWidth": 0.9,
+        "showValue": "never",
+        "stacking": "none",
+        "xTickLabelRotation": 0,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "id": 16
+    },
+    {
+      "type": "barchart",
+      "title": "P/D: KV transfer time per request, mean (ms)",
+      "description": "Disaggregated prefill/decode only: NIXL time to move one request's KV cache from the prefill GPU to the decode GPU (decode server's vllm:nixl_xfer_time_seconds).",
+      "gridPos": {
+        "x": 12,
+        "y": 29,
+        "w": 6,
+        "h": 8
+      },
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "workload-sim"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "workload-sim"
+          },
+          "queryType": "table",
+          "queryText": "SELECT printf('%g req/s', rate) AS rate, srv_kv_xfer_mean_ms_med AS [mean transfer] FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
+          "rawQueryText": "SELECT printf('%g req/s', rate) AS rate, srv_kv_xfer_mean_ms_med AS [mean transfer] FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 85,
+            "lineWidth": 0,
+            "axisLabel": "transfer time"
+          },
+          "unit": "ms"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "mean transfer"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#7c3aed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rate"
+            },
+            "properties": [
+              {
+                "id": "custom.axisLabel",
+                "value": "offered load (requests per second)"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "xField": "rate",
+        "orientation": "vertical",
+        "groupWidth": 0.75,
+        "barWidth": 0.9,
+        "showValue": "never",
+        "stacking": "none",
+        "xTickLabelRotation": 0,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "id": 17
+    },
+    {
+      "type": "barchart",
+      "title": "P/D: KV transfer bandwidth (GB/s)",
+      "description": "Bytes moved \u00f7 transfer time. Raw NVLink between these V100s measured ~45 GB/s (bench/nixl_check.py).",
+      "gridPos": {
+        "x": 18,
+        "y": 29,
+        "w": 6,
+        "h": 8
+      },
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "workload-sim"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "workload-sim"
+          },
+          "queryType": "table",
+          "queryText": "SELECT printf('%g req/s', rate) AS rate, srv_kv_xfer_gb_per_s_med AS [bandwidth] FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
+          "rawQueryText": "SELECT printf('%g req/s', rate) AS rate, srv_kv_xfer_gb_per_s_med AS [bandwidth] FROM sweep_agg WHERE experiment = '$experiment' AND scenario = '$scenario' ORDER BY rate",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "fillOpacity": 85,
+            "lineWidth": 0,
+            "axisLabel": "GB/s"
+          },
+          "unit": "none"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "bandwidth"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "mode": "fixed",
+                  "fixedColor": "#7c3aed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "rate"
+            },
+            "properties": [
+              {
+                "id": "custom.axisLabel",
+                "value": "offered load (requests per second)"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "xField": "rate",
+        "orientation": "vertical",
+        "groupWidth": 0.75,
+        "barWidth": 0.9,
+        "showValue": "never",
+        "stacking": "none",
+        "xTickLabelRotation": 0,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "id": 18
+    },
+    {
       "type": "row",
       "title": "All runs (click a run to open it over time)",
       "gridPos": {
         "x": 0,
-        "y": 29,
+        "y": 37,
         "w": 24,
         "h": 1
       },
       "collapsed": false,
       "panels": [],
-      "id": 15
+      "id": 19
     },
     {
       "type": "table",
@@ -1378,7 +1745,7 @@
       "description": "",
       "gridPos": {
         "x": 0,
-        "y": 30,
+        "y": 38,
         "w": 24,
         "h": 14
       },
@@ -1394,8 +1761,8 @@
             "uid": "workload-sim"
           },
           "queryType": "table",
-          "queryText": "SELECT label AS run, scenario, rate AS [rate (req/s)], rep AS repeat,\n  offered_rps AS [offered (req/s)], steady_requests_per_s AS [completed (req/s)],\n  steady_output_tokens_per_s AS [output (tokens/s)],\n  ttft_mean_ms AS [TTFT mean (ms)],\n  ttft_p50_ms AS [TTFT p50 (ms)],\n  ttft_p90_ms AS [TTFT p90 (ms)],\n  ttft_p95_ms AS [TTFT p95 (ms)],\n  ttft_p99_ms AS [TTFT p99 (ms)],\n  tpot_mean_ms AS [TPOT mean (ms/token)],\n  tpot_p50_ms AS [TPOT p50 (ms/token)],\n  tpot_p90_ms AS [TPOT p90 (ms/token)],\n  tpot_p95_ms AS [TPOT p95 (ms/token)],\n  tpot_p99_ms AS [TPOT p99 (ms/token)],\n  itl_mean_ms AS [ITL mean (ms)],\n  itl_p50_ms AS [ITL p50 (ms)],\n  itl_p90_ms AS [ITL p90 (ms)],\n  itl_p95_ms AS [ITL p95 (ms)],\n  itl_p99_ms AS [ITL p99 (ms)],\n  e2e_mean_ms AS [E2E mean (ms)],\n  e2e_p50_ms AS [E2E p50 (ms)],\n  e2e_p90_ms AS [E2E p90 (ms)],\n  e2e_p95_ms AS [E2E p95 (ms)],\n  e2e_p99_ms AS [E2E p99 (ms)],\n  norm_latency_mean_ms AS [norm. latency mean (ms/token)],\n  norm_latency_p50_ms AS [norm. latency p50 (ms/token)],\n  norm_latency_p90_ms AS [norm. latency p90 (ms/token)],\n  norm_latency_p95_ms AS [norm. latency p95 (ms/token)],\n  norm_latency_p99_ms AS [norm. latency p99 (ms/token)],\n  srv_running_mean AS [batch: mean running (requests)], srv_waiting_mean AS [queue: mean waiting (requests)],\n  srv_waiting_max AS [queue: max waiting (requests)],\n  srv_kv_cache_usage_mean * 100 AS [KV cache used, mean (%)], srv_kv_cache_usage_max * 100 AS [KV cache used, max (%)],\n  srv_preemptions AS [preemptions (count)], srv_queue_mean_ms AS [vLLM queue wait, mean (ms)],\n  [srv_queue_frac_over_1.0s] * 100 AS [waited > 1 s in vLLM queue (%)],\n  srv_prefix_cache_hit_rate * 100 AS [prefix cache hit rate (%)],\n  successes AS [completed (requests)], requests AS [sent (requests)], client_max_lag_ms AS [client max lag (ms)],\n  run_id, experiment, from_ms, to_ms\nFROM runs WHERE experiment = '$experiment'  ORDER BY mode, scenario, rate, rep",
-          "rawQueryText": "SELECT label AS run, scenario, rate AS [rate (req/s)], rep AS repeat,\n  offered_rps AS [offered (req/s)], steady_requests_per_s AS [completed (req/s)],\n  steady_output_tokens_per_s AS [output (tokens/s)],\n  ttft_mean_ms AS [TTFT mean (ms)],\n  ttft_p50_ms AS [TTFT p50 (ms)],\n  ttft_p90_ms AS [TTFT p90 (ms)],\n  ttft_p95_ms AS [TTFT p95 (ms)],\n  ttft_p99_ms AS [TTFT p99 (ms)],\n  tpot_mean_ms AS [TPOT mean (ms/token)],\n  tpot_p50_ms AS [TPOT p50 (ms/token)],\n  tpot_p90_ms AS [TPOT p90 (ms/token)],\n  tpot_p95_ms AS [TPOT p95 (ms/token)],\n  tpot_p99_ms AS [TPOT p99 (ms/token)],\n  itl_mean_ms AS [ITL mean (ms)],\n  itl_p50_ms AS [ITL p50 (ms)],\n  itl_p90_ms AS [ITL p90 (ms)],\n  itl_p95_ms AS [ITL p95 (ms)],\n  itl_p99_ms AS [ITL p99 (ms)],\n  e2e_mean_ms AS [E2E mean (ms)],\n  e2e_p50_ms AS [E2E p50 (ms)],\n  e2e_p90_ms AS [E2E p90 (ms)],\n  e2e_p95_ms AS [E2E p95 (ms)],\n  e2e_p99_ms AS [E2E p99 (ms)],\n  norm_latency_mean_ms AS [norm. latency mean (ms/token)],\n  norm_latency_p50_ms AS [norm. latency p50 (ms/token)],\n  norm_latency_p90_ms AS [norm. latency p90 (ms/token)],\n  norm_latency_p95_ms AS [norm. latency p95 (ms/token)],\n  norm_latency_p99_ms AS [norm. latency p99 (ms/token)],\n  srv_running_mean AS [batch: mean running (requests)], srv_waiting_mean AS [queue: mean waiting (requests)],\n  srv_waiting_max AS [queue: max waiting (requests)],\n  srv_kv_cache_usage_mean * 100 AS [KV cache used, mean (%)], srv_kv_cache_usage_max * 100 AS [KV cache used, max (%)],\n  srv_preemptions AS [preemptions (count)], srv_queue_mean_ms AS [vLLM queue wait, mean (ms)],\n  [srv_queue_frac_over_1.0s] * 100 AS [waited > 1 s in vLLM queue (%)],\n  srv_prefix_cache_hit_rate * 100 AS [prefix cache hit rate (%)],\n  successes AS [completed (requests)], requests AS [sent (requests)], client_max_lag_ms AS [client max lag (ms)],\n  run_id, experiment, from_ms, to_ms\nFROM runs WHERE experiment = '$experiment'  ORDER BY mode, scenario, rate, rep",
+          "queryText": "SELECT label AS run, scenario, rate AS [rate (req/s)], rep AS repeat,\n  offered_rps AS [offered (req/s)], steady_requests_per_s AS [completed (req/s)],\n  steady_output_tokens_per_s AS [output (tokens/s)],\n  ttft_mean_ms AS [TTFT mean (ms)],\n  ttft_p50_ms AS [TTFT p50 (ms)],\n  ttft_p90_ms AS [TTFT p90 (ms)],\n  ttft_p95_ms AS [TTFT p95 (ms)],\n  ttft_p99_ms AS [TTFT p99 (ms)],\n  tpot_mean_ms AS [TPOT mean (ms/token)],\n  tpot_p50_ms AS [TPOT p50 (ms/token)],\n  tpot_p90_ms AS [TPOT p90 (ms/token)],\n  tpot_p95_ms AS [TPOT p95 (ms/token)],\n  tpot_p99_ms AS [TPOT p99 (ms/token)],\n  itl_mean_ms AS [ITL mean (ms)],\n  itl_p50_ms AS [ITL p50 (ms)],\n  itl_p90_ms AS [ITL p90 (ms)],\n  itl_p95_ms AS [ITL p95 (ms)],\n  itl_p99_ms AS [ITL p99 (ms)],\n  e2e_mean_ms AS [E2E mean (ms)],\n  e2e_p50_ms AS [E2E p50 (ms)],\n  e2e_p90_ms AS [E2E p90 (ms)],\n  e2e_p95_ms AS [E2E p95 (ms)],\n  e2e_p99_ms AS [E2E p99 (ms)],\n  norm_latency_mean_ms AS [norm. latency mean (ms/token)],\n  norm_latency_p50_ms AS [norm. latency p50 (ms/token)],\n  norm_latency_p90_ms AS [norm. latency p90 (ms/token)],\n  norm_latency_p95_ms AS [norm. latency p95 (ms/token)],\n  norm_latency_p99_ms AS [norm. latency p99 (ms/token)],\n  srv_running_mean AS [batch: mean running (requests)], srv_waiting_mean AS [queue: mean waiting (requests)],\n  srv_waiting_max AS [queue: max waiting (requests)],\n  srv_kv_cache_usage_mean * 100 AS [KV cache used, mean (%)], srv_kv_cache_usage_max * 100 AS [KV cache used, max (%)],\n  srv_preemptions AS [preemptions (count)], srv_queue_mean_ms AS [vLLM queue wait, mean (ms)],\n  [srv_queue_frac_over_1.0s] * 100 AS [waited > 1 s in vLLM queue (%)],\n  srv_prefix_cache_hit_rate * 100 AS [prefix cache hit rate (%)],\n  srv_resume_cache_hit_rate * 100 AS [resumed after preemption: KV still cached (%)],\n  srv_kv_xfer_mean_ms AS [P/D KV transfer, mean (ms)], srv_kv_xfer_gb_per_s AS [P/D KV transfer (GB/s)],\n  successes AS [completed (requests)], requests AS [sent (requests)], client_max_lag_ms AS [client max lag (ms)],\n  run_id, experiment, from_ms, to_ms\nFROM runs WHERE experiment = '$experiment'  ORDER BY mode, scenario, rate, rep",
+          "rawQueryText": "SELECT label AS run, scenario, rate AS [rate (req/s)], rep AS repeat,\n  offered_rps AS [offered (req/s)], steady_requests_per_s AS [completed (req/s)],\n  steady_output_tokens_per_s AS [output (tokens/s)],\n  ttft_mean_ms AS [TTFT mean (ms)],\n  ttft_p50_ms AS [TTFT p50 (ms)],\n  ttft_p90_ms AS [TTFT p90 (ms)],\n  ttft_p95_ms AS [TTFT p95 (ms)],\n  ttft_p99_ms AS [TTFT p99 (ms)],\n  tpot_mean_ms AS [TPOT mean (ms/token)],\n  tpot_p50_ms AS [TPOT p50 (ms/token)],\n  tpot_p90_ms AS [TPOT p90 (ms/token)],\n  tpot_p95_ms AS [TPOT p95 (ms/token)],\n  tpot_p99_ms AS [TPOT p99 (ms/token)],\n  itl_mean_ms AS [ITL mean (ms)],\n  itl_p50_ms AS [ITL p50 (ms)],\n  itl_p90_ms AS [ITL p90 (ms)],\n  itl_p95_ms AS [ITL p95 (ms)],\n  itl_p99_ms AS [ITL p99 (ms)],\n  e2e_mean_ms AS [E2E mean (ms)],\n  e2e_p50_ms AS [E2E p50 (ms)],\n  e2e_p90_ms AS [E2E p90 (ms)],\n  e2e_p95_ms AS [E2E p95 (ms)],\n  e2e_p99_ms AS [E2E p99 (ms)],\n  norm_latency_mean_ms AS [norm. latency mean (ms/token)],\n  norm_latency_p50_ms AS [norm. latency p50 (ms/token)],\n  norm_latency_p90_ms AS [norm. latency p90 (ms/token)],\n  norm_latency_p95_ms AS [norm. latency p95 (ms/token)],\n  norm_latency_p99_ms AS [norm. latency p99 (ms/token)],\n  srv_running_mean AS [batch: mean running (requests)], srv_waiting_mean AS [queue: mean waiting (requests)],\n  srv_waiting_max AS [queue: max waiting (requests)],\n  srv_kv_cache_usage_mean * 100 AS [KV cache used, mean (%)], srv_kv_cache_usage_max * 100 AS [KV cache used, max (%)],\n  srv_preemptions AS [preemptions (count)], srv_queue_mean_ms AS [vLLM queue wait, mean (ms)],\n  [srv_queue_frac_over_1.0s] * 100 AS [waited > 1 s in vLLM queue (%)],\n  srv_prefix_cache_hit_rate * 100 AS [prefix cache hit rate (%)],\n  srv_resume_cache_hit_rate * 100 AS [resumed after preemption: KV still cached (%)],\n  srv_kv_xfer_mean_ms AS [P/D KV transfer, mean (ms)], srv_kv_xfer_gb_per_s AS [P/D KV transfer (GB/s)],\n  successes AS [completed (requests)], requests AS [sent (requests)], client_max_lag_ms AS [client max lag (ms)],\n  run_id, experiment, from_ms, to_ms\nFROM runs WHERE experiment = '$experiment'  ORDER BY mode, scenario, rate, rep",
           "timeColumns": [
             "time"
           ]
@@ -2172,6 +2539,66 @@
           {
             "matcher": {
               "id": "byName",
+              "options": "resumed after preemption: KV still cached (%)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 394
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "P/D KV transfer, mean (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 242
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "P/D KV transfer (GB/s)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 210
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
               "options": "completed (requests)"
             },
             "properties": [
@@ -2383,7 +2810,7 @@
           "show": false
         }
       },
-      "id": 16
+      "id": 20
     }
   ],
   "annotations": {

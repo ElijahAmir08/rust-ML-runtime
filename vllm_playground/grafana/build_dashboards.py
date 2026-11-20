@@ -135,6 +135,8 @@ RUN_TABLE_SQL = """SELECT label AS run, scenario, rate AS [rate (req/s)], rep AS
   srv_preemptions AS [preemptions (count)], srv_queue_mean_ms AS [vLLM queue wait, mean (ms)],
   [srv_queue_frac_over_1.0s] * 100 AS [waited > 1 s in vLLM queue (%)],
   srv_prefix_cache_hit_rate * 100 AS [prefix cache hit rate (%)],
+  srv_resume_cache_hit_rate * 100 AS [resumed after preemption: KV still cached (%)],
+  srv_kv_xfer_mean_ms AS [P/D KV transfer, mean (ms)], srv_kv_xfer_gb_per_s AS [P/D KV transfer (GB/s)],
   successes AS [completed (requests)], requests AS [sent (requests)], client_max_lag_ms AS [client max lag (ms)],
   run_id, experiment, from_ms, to_ms
 FROM runs WHERE experiment = '$experiment' {extra} ORDER BY mode, scenario, rate, rep"""
@@ -144,6 +146,7 @@ TABLE_DECIMALS = {
     "batch: mean running (requests)": 1, "queue: mean waiting (requests)": 1, "queue: max waiting (requests)": 0,
     "KV cache used, mean (%)": 0, "KV cache used, max (%)": 0, "preemptions (count)": 0,
     "vLLM queue wait, mean (ms)": 0, "waited > 1 s in vLLM queue (%)": 1, "prefix cache hit rate (%)": 1,
+    "resumed after preemption: KV still cached (%)": 1, "P/D KV transfer, mean (ms)": 1, "P/D KV transfer (GB/s)": 2,
     "completed (requests)": 0, "sent (requests)": 0, "client max lag (ms)": 1,
 }
 
@@ -160,7 +163,8 @@ Select several runs there to overlay them (sweep runs share an elapsed-time axis
 Every bar chart: **x-axis = offered load (requests per second)**, y-axis label and unit on each chart.
 *completed* is steady-state throughput (requests finished inside the measured interval ÷ its length); when the
 server keeps up it matches *offered*. Batch / queue / KV cache are vLLM's own gauges (`num_requests_running`,
-`num_requests_waiting`, `kv_cache_usage_perc`), averaged over the measured interval."""
+`num_requests_waiting`, `kv_cache_usage_perc`), averaged over the measured interval. With two GPUs (P/D or
+data parallel) they are summed over both, so KV cache used goes up to 200%."""
 
 
 def overview():
@@ -231,6 +235,32 @@ def overview():
                  f"SELECT {rate_lbl}, [srv_queue_frac_over_1.0s_med] * 100 AS [waited > 1 s] {agg}",
                  gp(18), "requests (%)", unit="percent", colors={"waited > 1 s": "#be123c"},
                  desc="From vLLM's queue-time histogram (includes warmup requests)."),
+    ]
+    y += 8
+    panels += [  # KV cache: what the prefix cache saved, and P/D KV transfers
+        barchart("Prefix cache hit rate: new vs resumed requests (%)",
+                 f"SELECT {rate_lbl}, srv_prefix_cache_hit_rate_med * 100 AS [new requests], "
+                 f"srv_resume_cache_hit_rate_med * 100 AS [resumed after preemption] {agg}",
+                 gp(0), "prompt tokens found in cache (%)", unit="percent",
+                 colors={"new requests": "#fdba74", "resumed after preemption": "#c2410c"},
+                 desc="Share of prompt tokens served from the prefix cache. New requests: our prompts are random, "
+                      "so ~0 is expected. Resumed: how much of a preempted request's KV was still cached when it "
+                      "came back (the rest is recomputed). Resumed needs our vLLM fork's counters."),
+        barchart("Tokens re-queried by requests resuming after preemption",
+                 f"SELECT {rate_lbl}, srv_resume_tokens_med AS [tokens] {agg}",
+                 gp(6), "tokens", unit="short", colors={"tokens": "#be123c"},
+                 desc="Prompt + already generated tokens of preempted requests, looked up again when they resume. "
+                      "Times (1 - resumed hit rate) = tokens recomputed."),
+        barchart("P/D: KV transfer time per request, mean (ms)",
+                 f"SELECT {rate_lbl}, srv_kv_xfer_mean_ms_med AS [mean transfer] {agg}",
+                 gp(12), "transfer time", unit="ms", colors={"mean transfer": "#7c3aed"},
+                 desc="Disaggregated prefill/decode only: NIXL time to move one request's KV cache from the "
+                      "prefill GPU to the decode GPU (decode server's vllm:nixl_xfer_time_seconds)."),
+        barchart("P/D: KV transfer bandwidth (GB/s)",
+                 f"SELECT {rate_lbl}, srv_kv_xfer_gb_per_s_med AS [bandwidth] {agg}",
+                 gp(18), "GB/s", unit="none", colors={"bandwidth": "#7c3aed"},
+                 desc="Bytes moved ÷ transfer time. Raw NVLink between these V100s measured ~45 GB/s "
+                      "(bench/nixl_check.py)."),
     ]
     y += 8
     panels.append(row("All runs (click a run to open it over time)", y))
@@ -304,7 +334,20 @@ def run_detail():
                    f"label {w}",
                    {"x": 12, "y": 36, "w": 12, "h": 9}, "latency per output token", unit="ms", display=two, log=True,
                    desc="e2e ÷ output tokens, requests grouped by arrival time."),
-        table("Selected runs", RUN_TABLE_SQL.format(extra="AND " + RUNS), {"x": 0, "y": 45, "w": 24, "h": 6},
+        timeseries("Prefix cache hit rate, per 1 s sample (%)",
+                   f"SELECT time, prefix_hit_rate AS [new requests], resume_hit_rate AS [resumed after preemption], "
+                   f"label {s}",
+                   {"x": 0, "y": 45, "w": 8, "h": 8}, "prompt tokens found in cache", unit="percentunit",
+                   display=two, min_=0, max_=1, points=True,
+                   desc="Share of prompt tokens looked up in each sample that were already cached. Only samples "
+                        "with lookups are shown. Resumed needs our vLLM fork's counters."),
+        timeseries("Preemptions per 1 s sample", f"SELECT time, preemptions AS value, label {s}",
+                   {"x": 8, "y": 45, "w": 8, "h": 8}, "preemptions", unit="none", min_=0,
+                   desc="Requests evicted for lack of KV blocks in each sample; compare with KV cache used."),
+        timeseries("P/D: KV transfers per 1 s sample", f"SELECT time, kv_xfers AS value, label {s}",
+                   {"x": 16, "y": 45, "w": 8, "h": 8}, "transfers", unit="none", min_=0,
+                   desc="Disaggregated prefill/decode only: requests whose KV the decode GPU pulled over NIXL."),
+        table("Selected runs", RUN_TABLE_SQL.format(extra="AND " + RUNS), {"x": 0, "y": 53, "w": 24, "h": 6},
               link=False),
     ]
     variables = [

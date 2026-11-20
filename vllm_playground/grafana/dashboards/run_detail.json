@@ -746,12 +746,193 @@
       "id": 12
     },
     {
+      "type": "timeseries",
+      "title": "Prefix cache hit rate, per 1 s sample (%)",
+      "description": "Share of prompt tokens looked up in each sample that were already cached. Only samples with lookups are shown. Resumed needs our vLLM fork's counters.",
+      "gridPos": {
+        "x": 0,
+        "y": 45,
+        "w": 8,
+        "h": 8
+      },
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "workload-sim"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "workload-sim"
+          },
+          "queryType": "time series",
+          "queryText": "SELECT time, prefix_hit_rate AS [new requests], resume_hit_rate AS [resumed after preemption], label FROM server JOIN runs USING (run_id) WHERE server.run_id IN (${run:sqlstring}) ORDER BY time",
+          "rawQueryText": "SELECT time, prefix_hit_rate AS [new requests], resume_hit_rate AS [resumed after preemption], label FROM server JOIN runs USING (run_id) WHERE server.run_id IN (${run:sqlstring}) ORDER BY time",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "displayName": "${__field.name} \u00b7 ${__field.labels.label}",
+          "custom": {
+            "drawStyle": "points",
+            "lineWidth": 1,
+            "spanNulls": true,
+            "showPoints": "always",
+            "pointSize": 3,
+            "fillOpacity": 0,
+            "lineInterpolation": "linear",
+            "axisLabel": "prompt tokens found in cache"
+          },
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 13
+    },
+    {
+      "type": "timeseries",
+      "title": "Preemptions per 1 s sample",
+      "description": "Requests evicted for lack of KV blocks in each sample; compare with KV cache used.",
+      "gridPos": {
+        "x": 8,
+        "y": 45,
+        "w": 8,
+        "h": 8
+      },
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "workload-sim"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "workload-sim"
+          },
+          "queryType": "time series",
+          "queryText": "SELECT time, preemptions AS value, label FROM server JOIN runs USING (run_id) WHERE server.run_id IN (${run:sqlstring}) ORDER BY time",
+          "rawQueryText": "SELECT time, preemptions AS value, label FROM server JOIN runs USING (run_id) WHERE server.run_id IN (${run:sqlstring}) ORDER BY time",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "displayName": "${__field.labels.label}",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "spanNulls": true,
+            "showPoints": "never",
+            "pointSize": 4,
+            "fillOpacity": 0,
+            "lineInterpolation": "linear",
+            "axisLabel": "preemptions"
+          },
+          "unit": "none",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 14
+    },
+    {
+      "type": "timeseries",
+      "title": "P/D: KV transfers per 1 s sample",
+      "description": "Disaggregated prefill/decode only: requests whose KV the decode GPU pulled over NIXL.",
+      "gridPos": {
+        "x": 16,
+        "y": 45,
+        "w": 8,
+        "h": 8
+      },
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "workload-sim"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "workload-sim"
+          },
+          "queryType": "time series",
+          "queryText": "SELECT time, kv_xfers AS value, label FROM server JOIN runs USING (run_id) WHERE server.run_id IN (${run:sqlstring}) ORDER BY time",
+          "rawQueryText": "SELECT time, kv_xfers AS value, label FROM server JOIN runs USING (run_id) WHERE server.run_id IN (${run:sqlstring}) ORDER BY time",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "displayName": "${__field.labels.label}",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 1,
+            "spanNulls": true,
+            "showPoints": "never",
+            "pointSize": 4,
+            "fillOpacity": 0,
+            "lineInterpolation": "linear",
+            "axisLabel": "transfers"
+          },
+          "unit": "none",
+          "min": 0
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 15
+    },
+    {
       "type": "table",
       "title": "Selected runs",
       "description": "",
       "gridPos": {
         "x": 0,
-        "y": 45,
+        "y": 53,
         "w": 24,
         "h": 6
       },
@@ -767,8 +948,8 @@
             "uid": "workload-sim"
           },
           "queryType": "table",
-          "queryText": "SELECT label AS run, scenario, rate AS [rate (req/s)], rep AS repeat,\n  offered_rps AS [offered (req/s)], steady_requests_per_s AS [completed (req/s)],\n  steady_output_tokens_per_s AS [output (tokens/s)],\n  ttft_mean_ms AS [TTFT mean (ms)],\n  ttft_p50_ms AS [TTFT p50 (ms)],\n  ttft_p90_ms AS [TTFT p90 (ms)],\n  ttft_p95_ms AS [TTFT p95 (ms)],\n  ttft_p99_ms AS [TTFT p99 (ms)],\n  tpot_mean_ms AS [TPOT mean (ms/token)],\n  tpot_p50_ms AS [TPOT p50 (ms/token)],\n  tpot_p90_ms AS [TPOT p90 (ms/token)],\n  tpot_p95_ms AS [TPOT p95 (ms/token)],\n  tpot_p99_ms AS [TPOT p99 (ms/token)],\n  itl_mean_ms AS [ITL mean (ms)],\n  itl_p50_ms AS [ITL p50 (ms)],\n  itl_p90_ms AS [ITL p90 (ms)],\n  itl_p95_ms AS [ITL p95 (ms)],\n  itl_p99_ms AS [ITL p99 (ms)],\n  e2e_mean_ms AS [E2E mean (ms)],\n  e2e_p50_ms AS [E2E p50 (ms)],\n  e2e_p90_ms AS [E2E p90 (ms)],\n  e2e_p95_ms AS [E2E p95 (ms)],\n  e2e_p99_ms AS [E2E p99 (ms)],\n  norm_latency_mean_ms AS [norm. latency mean (ms/token)],\n  norm_latency_p50_ms AS [norm. latency p50 (ms/token)],\n  norm_latency_p90_ms AS [norm. latency p90 (ms/token)],\n  norm_latency_p95_ms AS [norm. latency p95 (ms/token)],\n  norm_latency_p99_ms AS [norm. latency p99 (ms/token)],\n  srv_running_mean AS [batch: mean running (requests)], srv_waiting_mean AS [queue: mean waiting (requests)],\n  srv_waiting_max AS [queue: max waiting (requests)],\n  srv_kv_cache_usage_mean * 100 AS [KV cache used, mean (%)], srv_kv_cache_usage_max * 100 AS [KV cache used, max (%)],\n  srv_preemptions AS [preemptions (count)], srv_queue_mean_ms AS [vLLM queue wait, mean (ms)],\n  [srv_queue_frac_over_1.0s] * 100 AS [waited > 1 s in vLLM queue (%)],\n  srv_prefix_cache_hit_rate * 100 AS [prefix cache hit rate (%)],\n  successes AS [completed (requests)], requests AS [sent (requests)], client_max_lag_ms AS [client max lag (ms)],\n  run_id, experiment, from_ms, to_ms\nFROM runs WHERE experiment = '$experiment' AND run_id IN (${run:sqlstring}) ORDER BY mode, scenario, rate, rep",
-          "rawQueryText": "SELECT label AS run, scenario, rate AS [rate (req/s)], rep AS repeat,\n  offered_rps AS [offered (req/s)], steady_requests_per_s AS [completed (req/s)],\n  steady_output_tokens_per_s AS [output (tokens/s)],\n  ttft_mean_ms AS [TTFT mean (ms)],\n  ttft_p50_ms AS [TTFT p50 (ms)],\n  ttft_p90_ms AS [TTFT p90 (ms)],\n  ttft_p95_ms AS [TTFT p95 (ms)],\n  ttft_p99_ms AS [TTFT p99 (ms)],\n  tpot_mean_ms AS [TPOT mean (ms/token)],\n  tpot_p50_ms AS [TPOT p50 (ms/token)],\n  tpot_p90_ms AS [TPOT p90 (ms/token)],\n  tpot_p95_ms AS [TPOT p95 (ms/token)],\n  tpot_p99_ms AS [TPOT p99 (ms/token)],\n  itl_mean_ms AS [ITL mean (ms)],\n  itl_p50_ms AS [ITL p50 (ms)],\n  itl_p90_ms AS [ITL p90 (ms)],\n  itl_p95_ms AS [ITL p95 (ms)],\n  itl_p99_ms AS [ITL p99 (ms)],\n  e2e_mean_ms AS [E2E mean (ms)],\n  e2e_p50_ms AS [E2E p50 (ms)],\n  e2e_p90_ms AS [E2E p90 (ms)],\n  e2e_p95_ms AS [E2E p95 (ms)],\n  e2e_p99_ms AS [E2E p99 (ms)],\n  norm_latency_mean_ms AS [norm. latency mean (ms/token)],\n  norm_latency_p50_ms AS [norm. latency p50 (ms/token)],\n  norm_latency_p90_ms AS [norm. latency p90 (ms/token)],\n  norm_latency_p95_ms AS [norm. latency p95 (ms/token)],\n  norm_latency_p99_ms AS [norm. latency p99 (ms/token)],\n  srv_running_mean AS [batch: mean running (requests)], srv_waiting_mean AS [queue: mean waiting (requests)],\n  srv_waiting_max AS [queue: max waiting (requests)],\n  srv_kv_cache_usage_mean * 100 AS [KV cache used, mean (%)], srv_kv_cache_usage_max * 100 AS [KV cache used, max (%)],\n  srv_preemptions AS [preemptions (count)], srv_queue_mean_ms AS [vLLM queue wait, mean (ms)],\n  [srv_queue_frac_over_1.0s] * 100 AS [waited > 1 s in vLLM queue (%)],\n  srv_prefix_cache_hit_rate * 100 AS [prefix cache hit rate (%)],\n  successes AS [completed (requests)], requests AS [sent (requests)], client_max_lag_ms AS [client max lag (ms)],\n  run_id, experiment, from_ms, to_ms\nFROM runs WHERE experiment = '$experiment' AND run_id IN (${run:sqlstring}) ORDER BY mode, scenario, rate, rep",
+          "queryText": "SELECT label AS run, scenario, rate AS [rate (req/s)], rep AS repeat,\n  offered_rps AS [offered (req/s)], steady_requests_per_s AS [completed (req/s)],\n  steady_output_tokens_per_s AS [output (tokens/s)],\n  ttft_mean_ms AS [TTFT mean (ms)],\n  ttft_p50_ms AS [TTFT p50 (ms)],\n  ttft_p90_ms AS [TTFT p90 (ms)],\n  ttft_p95_ms AS [TTFT p95 (ms)],\n  ttft_p99_ms AS [TTFT p99 (ms)],\n  tpot_mean_ms AS [TPOT mean (ms/token)],\n  tpot_p50_ms AS [TPOT p50 (ms/token)],\n  tpot_p90_ms AS [TPOT p90 (ms/token)],\n  tpot_p95_ms AS [TPOT p95 (ms/token)],\n  tpot_p99_ms AS [TPOT p99 (ms/token)],\n  itl_mean_ms AS [ITL mean (ms)],\n  itl_p50_ms AS [ITL p50 (ms)],\n  itl_p90_ms AS [ITL p90 (ms)],\n  itl_p95_ms AS [ITL p95 (ms)],\n  itl_p99_ms AS [ITL p99 (ms)],\n  e2e_mean_ms AS [E2E mean (ms)],\n  e2e_p50_ms AS [E2E p50 (ms)],\n  e2e_p90_ms AS [E2E p90 (ms)],\n  e2e_p95_ms AS [E2E p95 (ms)],\n  e2e_p99_ms AS [E2E p99 (ms)],\n  norm_latency_mean_ms AS [norm. latency mean (ms/token)],\n  norm_latency_p50_ms AS [norm. latency p50 (ms/token)],\n  norm_latency_p90_ms AS [norm. latency p90 (ms/token)],\n  norm_latency_p95_ms AS [norm. latency p95 (ms/token)],\n  norm_latency_p99_ms AS [norm. latency p99 (ms/token)],\n  srv_running_mean AS [batch: mean running (requests)], srv_waiting_mean AS [queue: mean waiting (requests)],\n  srv_waiting_max AS [queue: max waiting (requests)],\n  srv_kv_cache_usage_mean * 100 AS [KV cache used, mean (%)], srv_kv_cache_usage_max * 100 AS [KV cache used, max (%)],\n  srv_preemptions AS [preemptions (count)], srv_queue_mean_ms AS [vLLM queue wait, mean (ms)],\n  [srv_queue_frac_over_1.0s] * 100 AS [waited > 1 s in vLLM queue (%)],\n  srv_prefix_cache_hit_rate * 100 AS [prefix cache hit rate (%)],\n  srv_resume_cache_hit_rate * 100 AS [resumed after preemption: KV still cached (%)],\n  srv_kv_xfer_mean_ms AS [P/D KV transfer, mean (ms)], srv_kv_xfer_gb_per_s AS [P/D KV transfer (GB/s)],\n  successes AS [completed (requests)], requests AS [sent (requests)], client_max_lag_ms AS [client max lag (ms)],\n  run_id, experiment, from_ms, to_ms\nFROM runs WHERE experiment = '$experiment' AND run_id IN (${run:sqlstring}) ORDER BY mode, scenario, rate, rep",
+          "rawQueryText": "SELECT label AS run, scenario, rate AS [rate (req/s)], rep AS repeat,\n  offered_rps AS [offered (req/s)], steady_requests_per_s AS [completed (req/s)],\n  steady_output_tokens_per_s AS [output (tokens/s)],\n  ttft_mean_ms AS [TTFT mean (ms)],\n  ttft_p50_ms AS [TTFT p50 (ms)],\n  ttft_p90_ms AS [TTFT p90 (ms)],\n  ttft_p95_ms AS [TTFT p95 (ms)],\n  ttft_p99_ms AS [TTFT p99 (ms)],\n  tpot_mean_ms AS [TPOT mean (ms/token)],\n  tpot_p50_ms AS [TPOT p50 (ms/token)],\n  tpot_p90_ms AS [TPOT p90 (ms/token)],\n  tpot_p95_ms AS [TPOT p95 (ms/token)],\n  tpot_p99_ms AS [TPOT p99 (ms/token)],\n  itl_mean_ms AS [ITL mean (ms)],\n  itl_p50_ms AS [ITL p50 (ms)],\n  itl_p90_ms AS [ITL p90 (ms)],\n  itl_p95_ms AS [ITL p95 (ms)],\n  itl_p99_ms AS [ITL p99 (ms)],\n  e2e_mean_ms AS [E2E mean (ms)],\n  e2e_p50_ms AS [E2E p50 (ms)],\n  e2e_p90_ms AS [E2E p90 (ms)],\n  e2e_p95_ms AS [E2E p95 (ms)],\n  e2e_p99_ms AS [E2E p99 (ms)],\n  norm_latency_mean_ms AS [norm. latency mean (ms/token)],\n  norm_latency_p50_ms AS [norm. latency p50 (ms/token)],\n  norm_latency_p90_ms AS [norm. latency p90 (ms/token)],\n  norm_latency_p95_ms AS [norm. latency p95 (ms/token)],\n  norm_latency_p99_ms AS [norm. latency p99 (ms/token)],\n  srv_running_mean AS [batch: mean running (requests)], srv_waiting_mean AS [queue: mean waiting (requests)],\n  srv_waiting_max AS [queue: max waiting (requests)],\n  srv_kv_cache_usage_mean * 100 AS [KV cache used, mean (%)], srv_kv_cache_usage_max * 100 AS [KV cache used, max (%)],\n  srv_preemptions AS [preemptions (count)], srv_queue_mean_ms AS [vLLM queue wait, mean (ms)],\n  [srv_queue_frac_over_1.0s] * 100 AS [waited > 1 s in vLLM queue (%)],\n  srv_prefix_cache_hit_rate * 100 AS [prefix cache hit rate (%)],\n  srv_resume_cache_hit_rate * 100 AS [resumed after preemption: KV still cached (%)],\n  srv_kv_xfer_mean_ms AS [P/D KV transfer, mean (ms)], srv_kv_xfer_gb_per_s AS [P/D KV transfer (GB/s)],\n  successes AS [completed (requests)], requests AS [sent (requests)], client_max_lag_ms AS [client max lag (ms)],\n  run_id, experiment, from_ms, to_ms\nFROM runs WHERE experiment = '$experiment' AND run_id IN (${run:sqlstring}) ORDER BY mode, scenario, rate, rep",
           "timeColumns": [
             "time"
           ]
@@ -1545,6 +1726,66 @@
           {
             "matcher": {
               "id": "byName",
+              "options": "resumed after preemption: KV still cached (%)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 394
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "P/D KV transfer, mean (ms)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 242
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "P/D KV transfer (GB/s)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              },
+              {
+                "id": "custom.minWidth",
+                "value": 210
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
               "options": "completed (requests)"
             },
             "properties": [
@@ -1739,7 +1980,7 @@
           "show": false
         }
       },
-      "id": 13
+      "id": 16
     }
   ],
   "annotations": {

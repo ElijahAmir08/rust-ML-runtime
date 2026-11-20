@@ -13,7 +13,7 @@ Time axis. Grafana plots against wall-clock time, so each run gets one:
   * replay runs use the trace's own time of day: trace start + t * speedup.
 
 Tables: runs (one row per run, all summary metrics), requests (one row per request),
-server (vLLM gauge samples), windows (per-time-bucket latency percentiles and load),
+server (vLLM gauge samples and per-interval counters), windows (per-time-bucket latency percentiles and load),
 sweep_agg (median/min/max over repeats for each scenario and rate).
 """
 import csv
@@ -34,7 +34,12 @@ AGG_METRICS = [
     *(f"{m}_{s}_ms" for m in LATENCIES for s in ("mean", "p50", "p90", "p95", "p99")),
     "srv_running_mean", "srv_waiting_mean", "srv_waiting_max", "srv_kv_cache_usage_mean", "srv_kv_cache_usage_max",
     "srv_queue_mean_ms", "srv_queue_frac_over_1.0s", "srv_preemptions", "srv_prefix_cache_hit_rate",
+    "srv_resume_tokens", "srv_resume_cache_hit_rate",  # requests resuming after preemption (our vLLM fork)
+    "srv_kv_xfers", "srv_kv_xfer_mean_ms", "srv_kv_xfer_mean_mb", "srv_kv_xfer_gb_per_s",  # P/D (NIXL)
 ]
+# server samples: gauges, then per-interval counter increases and hit rates (absent in older results)
+SERVER_COLUMNS = ["running", "waiting", "kv_cache_usage", "prefix_hits", "prefix_queries", "resume_hits",
+                  "resume_queries", "preemptions", "kv_xfers", "prefix_hit_rate", "resume_hit_rate"]
 
 
 def num(v):
@@ -194,7 +199,7 @@ def main():
     # fixed leading columns, so dashboards work even on runs recorded before a metric existed
     create(db, "runs", runs, ["run_id", "experiment", "mode", "scenario", "rate", "rep", "label"] + AGG_METRICS)
     create(db, "requests", requests, ["run_id", "time"])
-    create(db, "server", server, ["run_id", "time", "t", "running", "waiting", "kv_cache_usage"])
+    create(db, "server", server, ["run_id", "time", "t", *SERVER_COLUMNS])
     create(db, "windows", wins, ["run_id", "time"])
     create(db, "sweep_agg", agg, ["experiment", "scenario", "rate", "reps"]
            + [f"{m}_{s}" for m in AGG_METRICS for s in ("med", "min", "max")])
