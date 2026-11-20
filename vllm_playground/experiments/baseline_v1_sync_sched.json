@@ -5,76 +5,18 @@
   "server": {
     "model": "Qwen/Qwen2.5-7B-Instruct",
     "max_model_len": 8192,
-    "args": [
-      "--no-async-scheduling"
-    ],
+    "args": ["--no-async-scheduling"],
     "venv": "../vllm/.venv"
   },
-  "slurm": {
-    "partition": "gpu",
-    "gpus": 1,
-    "cpus": 8,
-    "mem": "64G",
-    "time": "8:00:00"
-  },
+  "slurm": {"partition": "gpu", "gpus": 1, "cpus": 8, "mem": "64G", "time": "8:00:00"},
   "runs": [
-    {
-      "name": "scheduler",
-      "mode": "sweep",
-      "scenario": "scheduler",
-      "rates": [
-        2,
-        4,
-        6,
-        8,
-        10,
-        12,
-        14
-      ],
-      "repeats": 3,
-      "duration": 180,
-      "warmup": 45
-    },
-    {
-      "name": "baseline",
-      "mode": "sweep",
-      "scenario": "baseline",
-      "rates": [
-        0.25,
-        0.5,
-        0.75,
-        1,
-        1.25,
-        1.5
-      ],
-      "repeats": 3,
-      "duration": 300,
-      "warmup": 60
-    },
-    {
-      "name": "kv_cache",
-      "mode": "sweep",
-      "scenario": "kv_cache",
-      "rates": [
-        0.05,
-        0.1,
-        0.15,
-        0.2,
-        0.3,
-        0.45
-      ],
-      "repeats": 3,
-      "duration": 480,
-      "warmup": 90
-    },
-    {
-      "name": "replay_0514",
-      "mode": "replay",
-      "start": "2024-05-14 10:00",
-      "hours": 6,
-      "speedup": 6,
-      "rate_scale": 0.0019,
-      "repeats": 1
-    }
+    {"name": "scheduler", "mode": "sweep", "scenario": "scheduler",
+     "rates": [2, 4, 6, 8, 10, 12, 14], "repeats": 3, "duration": 180, "warmup": 45},
+    {"name": "baseline", "mode": "sweep", "scenario": "baseline",
+     "rates": [0.25, 0.5, 0.75, 1, 1.25, 1.5], "repeats": 3, "duration": 300, "warmup": 60},
+    {"name": "kv_cache", "mode": "sweep", "scenario": "kv_cache",
+     "rates": [0.05, 0.1, 0.15, 0.2, 0.3, 0.45], "repeats": 3, "duration": 480, "warmup": 90},
+    {"name": "replay_0514", "mode": "replay",
+     "start": "2024-05-14 10:00", "hours": 6, "speedup": 6, "rate_scale": 0.0019, "repeats": 1}
   ]
 }
