@@ -79,7 +79,7 @@ record_run() {  # job id, run name, results dir
 }
 
 for i in $(seq 0 $((n - 1))); do
-    # RUN_NAME RUN_MODE SIM_CMD PRIME_CMD MODEL MAX_MODEL_LEN SERVE_ARGS VENV_PATH SEED PARTITION GPUS CPUS MEM TIME
+    # RUN_NAME RUN_MODE SIM_CMD PRIME_CMD MODEL MAX_MODEL_LEN SERVE_ARGS VENV_PATH SEED PD PARTITION GPUS CPUS MEM TIME
     eval "$("${RESOLVE[@]}" "$conf" --run "$i")"
     selected "$RUN_NAME" || continue
     run_dir=$results/$RUN_NAME
@@ -88,6 +88,7 @@ for i in $(seq 0 $((n - 1))); do
     if [ "$dry_run" -eq 1 ]; then
         echo "== $RUN_NAME ($RUN_MODE, seed $SEED) -> $run_dir/"
         echo "  server:  vllm serve $MODEL --dtype half --max-model-len $MAX_MODEL_LEN $SERVE_ARGS   (venv $VENV_PATH)"
+        [ "$PD" = 1 ] && echo "           x2 (prefill GPU + decode GPU, NixlConnector) behind vLLM's toy P/D proxy"
         [ -n "$PRIME_CMD" ] && echo "  priming: $PRIME_CMD"
         echo "  command: $SIM_CMD"
         [ "$local_run" -eq 0 ] && echo "  sbatch:  --job-name=$job_name --partition=$PARTITION --gres=gpu:$GPUS --cpus-per-task=$CPUS --mem=$MEM --time=$TIME${after:+ --dependency=afterok:$after}"
@@ -104,7 +105,7 @@ for i in $(seq 0 $((n - 1))); do
     } > "$run_dir/git.txt"  # GPU nodes have no git, so record it here
 
     export RUN_DIR="$(pwd)/$run_dir" PRIME_DIR="$(pwd)/results/_priming/$out_name/$RUN_NAME"
-    export SIM_CMD PRIME_CMD MODEL MAX_MODEL_LEN SERVE_ARGS VENV_PATH
+    export SIM_CMD PRIME_CMD MODEL MAX_MODEL_LEN SERVE_ARGS VENV_PATH PD
 
     if [ "$local_run" -eq 1 ]; then
         record_run local "$RUN_NAME" "$run_dir"

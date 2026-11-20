@@ -1,7 +1,9 @@
 """Polls a vLLM server's Prometheus /metrics endpoint during a run.
 
 This shows what the client can't see from outside: how many requests vLLM is running (its batch) and
-holding in its waiting queue, KV-cache usage, preemptions, and vLLM's own queue-time histogram.
+holding in its waiting queue, KV-cache usage, preemptions, prefix-cache hits (for new requests and,
+separately, for requests resuming after a preemption), vLLM's queue-time histogram and, for P/D,
+NIXL KV transfers.
 """
 import asyncio
 import math
@@ -20,6 +22,18 @@ GAUGES = {
 QUEUE_HIST = "vllm:request_queue_time_seconds"
 PREEMPTIONS = "vllm:num_preemptions_total"
 PREFIX_HITS, PREFIX_QUERIES = "vllm:prefix_cache_hits_total", "vllm:prefix_cache_queries_total"
+# Our vLLM fork only (vllm/v1/metrics/loggers.py): requests resuming after a preemption. Absent = 0.
+RESUME_HITS = "vllm:prefix_cache_preempted_hits_total"
+RESUME_QUERIES = "vllm:prefix_cache_preempted_queries_total"
+# P/D only (NixlConnector, reported by the decode server)
+XFER_TIME, XFER_BYTES = "vllm:nixl_xfer_time_seconds", "vllm:nixl_bytes_transferred"
+XFER_FAILED = "vllm:nixl_num_failed_transfers_total"
+# counters sampled with the gauges; the timeseries holds their per-interval increase
+COUNTERS = {
+    "prefix_hits": PREFIX_HITS, "prefix_queries": PREFIX_QUERIES,
+    "resume_hits": RESUME_HITS, "resume_queries": RESUME_QUERIES,
+    "preemptions": PREEMPTIONS, "kv_xfers": XFER_TIME + "_count",
+}
 
 
 def parse_prometheus(text: str) -> dict:
@@ -62,25 +76,36 @@ class ServerMonitor:
     """Samples vLLM's gauges every `interval` seconds and snapshots its counters/histograms at the
     start and end of a run, so they can be differenced.
 
-    Use as `async with ServerMonitor(url) as mon:` around LoadGenerator.run().
+    Use as `async with ServerMonitor(urls) as mon:` around LoadGenerator.run().
+
+    With several servers (P/D: prefill + decode) every series is summed across them, the same way
+    parse_prometheus sums across engines. So kv_cache_usage is a sum of fractions: 0..2 for two GPUs.
     """
 
-    def __init__(self, base_url: str, interval: float = 1.0):
-        self.url = base_url.rstrip("/") + "/metrics"
+    def __init__(self, base_urls: str | list[str], interval: float = 1.0):
+        self.urls = [u.rstrip("/") + "/metrics" for u in ([base_urls] if isinstance(base_urls, str) else base_urls)]
         self.interval = interval
-        self.samples: list[tuple[float, float, float, float]] = []  # (monotonic time, running, waiting, kv)
+        self.samples: list[tuple] = []  # (monotonic time, *GAUGES, *COUNTERS)
         self.start_snap = self.end_snap = None
 
-    async def _scrape(self) -> dict:
-        async with self.session.get(self.url) as resp:
+    async def _scrape_one(self, url: str) -> dict:
+        async with self.session.get(url) as resp:
             resp.raise_for_status()
             return parse_prometheus(await resp.text())
+
+    async def _scrape(self) -> dict:
+        out = defaultdict(float)
+        for snap in await asyncio.gather(*(self._scrape_one(u) for u in self.urls)):
+            for k, v in snap.items():
+                out[k] += v
+        return out
 
     async def _poll(self):
         while True:
             try:
                 snap = await self._scrape()
-                self.samples.append((time.monotonic(), *(snap.get((m, None), math.nan) for m in GAUGES.values())))
+                self.samples.append((time.monotonic(), *(snap.get((m, None), math.nan) for m in GAUGES.values()),
+                                     *(snap.get((m, None), 0.0) for m in COUNTERS.values())))
             except (aiohttp.ClientError, asyncio.TimeoutError):
                 pass  # a missed sample is fine; don't let monitoring break the run
             await asyncio.sleep(self.interval)
@@ -99,9 +124,15 @@ class ServerMonitor:
             await self.session.close()
 
     def timeseries(self, start: float) -> pd.DataFrame:
-        """Gauge samples with t = seconds after `start` (the LoadGenerator's start time)."""
-        df = pd.DataFrame(self.samples, columns=["t", *GAUGES])
+        """Samples with t = seconds after `start` (the LoadGenerator's start time): the gauges, the
+        increase of each counter since the previous sample, and per-interval prefix-cache hit rates
+        (NaN when there were no queries)."""
+        df = pd.DataFrame(self.samples, columns=["t", *GAUGES, *COUNTERS])
         df["t"] -= start
+        for c in COUNTERS:
+            df[c] = df[c].diff().clip(lower=0)  # first sample has no interval -> NaN
+        df["prefix_hit_rate"] = df.prefix_hits / df.prefix_queries.where(df.prefix_queries > 0)
+        df["resume_hit_rate"] = df.resume_hits / df.resume_queries.where(df.resume_queries > 0)
         return df
 
     def summary(self, start: float, warmup: float) -> dict:
@@ -138,4 +169,18 @@ class ServerMonitor:
         queries = delta(PREFIX_QUERIES)
         if queries > 0:
             out["srv_prefix_cache_hit_rate"] = delta(PREFIX_HITS) / queries
+        # Requests resuming after a preemption: the share of their tokens still in the prefix cache
+        # (the rest is recomputed). Only from our vLLM fork; absent otherwise.
+        resumed = delta(RESUME_QUERIES)
+        out["srv_resume_tokens"] = resumed
+        if resumed > 0:
+            out["srv_resume_cache_hit_rate"] = delta(RESUME_HITS) / resumed
+        xfers = delta(XFER_TIME + "_count")
+        if xfers > 0:  # P/D
+            xfer_s, xfer_b = delta(XFER_TIME + "_sum"), delta(XFER_BYTES + "_sum")
+            out["srv_kv_xfers"] = xfers
+            out["srv_kv_xfer_mean_ms"] = xfer_s / xfers * 1000
+            out["srv_kv_xfer_mean_mb"] = xfer_b / xfers / 2**20
+            out["srv_kv_xfer_gb_per_s"] = xfer_b / xfer_s / 2**30 if xfer_s > 0 else math.nan
+            out["srv_kv_xfer_failed"] = delta(XFER_FAILED)
         return out

@@ -25,6 +25,20 @@ from .workload import PoissonWorkload, ReplayWorkload, Workload, load_trace, sce
 DEFAULT_TRACE = Path(__file__).parent.parent / "AzureLLMInferenceTrace_conv_1week.csv"
 
 
+async def reset_prefix_cache(urls: list[str]) -> None:
+    """Empty vLLM's prefix cache on every server, so a run never hits blocks left by the previous one
+    (same seed -> request i of every rate starts with the same tokens). Needs VLLM_SERVER_DEV_MODE=1;
+    slurms/_job.slurm sets it. vLLM refuses (and only logs "Failed to reset prefix cache") while a request
+    still holds KV blocks; runs end only after every request has finished, so the server is idle here."""
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60)) as s:
+        for url in urls:
+            async with s.post(url.rstrip("/") + "/reset_prefix_cache") as r:
+                if r.status == 404:
+                    sys.exit(f"{url} has no /reset_prefix_cache: start vLLM with VLLM_SERVER_DEV_MODE=1, "
+                             "or pass --no-reset-prefix-cache")
+                r.raise_for_status()
+
+
 async def run_workload(args, workload: Workload, warmup: float,
                        end: float | None = None) -> tuple[RunMetrics, dict, pd.DataFrame | None]:
     """Run one workload, measuring [warmup, end) (end defaults to the last arrival). Returns client
@@ -33,11 +47,13 @@ async def run_workload(args, workload: Workload, warmup: float,
     if end is None:
         end = requests[-1].arrival_time if requests else None
     print(f"  {len(requests)} requests over {requests[-1].arrival_time:.0f} s" if requests else "  no requests")
+    if args.reset_prefix_cache:
+        await reset_prefix_cache(args.metrics_url)
     gen = None
     async with VLLMClient(args.url, args.model, seed=workload.seed) as client:
         gen = LoadGenerator(client)
         if args.monitor_interval > 0:
-            async with ServerMonitor(args.url, args.monitor_interval) as mon:
+            async with ServerMonitor(args.metrics_url, args.monitor_interval) as mon:
                 results = await gen.run(requests)
             server, series = mon.summary(gen.start, warmup), mon.timeseries(gen.start)
         else:
@@ -75,7 +91,7 @@ def write_run_info(args, name: str) -> None:
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
             for key, path in (("version", "/version"), ("models", "/v1/models")):
                 try:
-                    async with s.get(args.url.rstrip("/") + path) as r:
+                    async with s.get(args.metrics_url[0].rstrip("/") + path) as r:  # a vLLM server, not a proxy
                         out[key] = await r.json()
                 except (aiohttp.ClientError, asyncio.TimeoutError, ValueError) as e:
                     out[key] = f"unavailable: {e!r}"
@@ -146,6 +162,9 @@ def main() -> None:
     common = argparse.ArgumentParser(add_help=False)
     common.add_argument("--model", required=True, help="model name as served by vllm")
     common.add_argument("--url", default="http://localhost:8000")
+    common.add_argument("--metrics-url", type=lambda v: [u for u in v.split(",") if u], default=None,
+                        help="comma-separated server URL(s) to scrape /metrics from, summed (default: --url). "
+                             "For P/D, the prefill and decode servers, since --url is the proxy")
     common.add_argument("--trace", type=Path, default=DEFAULT_TRACE)
     common.add_argument("--out", type=Path, default=Path("results"))
     common.add_argument("--max-model-len", type=int, default=4096, help="clip request lengths to this")
@@ -154,6 +173,9 @@ def main() -> None:
     common.add_argument("--monitor-interval", type=float, default=1.0,
                         help="seconds between scrapes of the server's /metrics (0 disables)")
     common.add_argument("--cooldown", type=float, default=5.0, help="idle seconds after each run")
+    common.add_argument("--no-reset-prefix-cache", dest="reset_prefix_cache", action="store_false",
+                        help="don't empty vLLM's prefix cache before each run (resetting needs the server "
+                             "started with VLLM_SERVER_DEV_MODE=1)")
     sub = parser.add_subparsers(dest="mode", required=True)
 
     s = sub.add_parser("sweep", parents=[common], help="Poisson arrivals at each of several rates")
@@ -171,6 +193,7 @@ def main() -> None:
     r.add_argument("--rate-scale", type=float, default=1.0, help="fraction of trace requests to keep")
 
     args = parser.parse_args()
+    args.metrics_url = args.metrics_url or [args.url]
     args.out.mkdir(parents=True, exist_ok=True)
     if args.mode == "sweep":
         sweep(args)

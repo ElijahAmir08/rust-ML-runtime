@@ -12,6 +12,9 @@ running with the default.
 Seeding: the top-level "seed" (required; a run may override it) seeds the workload (arrival times,
 which trace rows set the lengths, replay thinning), every request's prompt tokens, and
 `vllm serve --seed`. Repeat i of a run uses seed + i.
+
+"server": {"pd": true} runs disaggregated prefill/decode instead of one server: a prefill and a
+decode vLLM (one GPU each, joined by NixlConnector) behind vLLM's toy proxy. Needs "gpus": 2.
 """
 import json
 import shlex
@@ -19,7 +22,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-SERVER = {"model": "Qwen/Qwen2.5-7B-Instruct", "max_model_len": 8192, "args": [], "venv": "../vllm/.venv"}
+SERVER = {"model": "Qwen/Qwen2.5-7B-Instruct", "max_model_len": 8192, "args": [], "venv": "../vllm/.venv", "pd": False}
 SLURM = {"partition": "gpu", "gpus": 1, "cpus": 8, "mem": "64G", "time": "8:00:00"}
 SWEEP = {"repeats": 3, "duration": 180, "warmup": 45, "prime": True, "short_ctx": 512, "long_ctx": 3072}
 REPLAY = {"repeats": 1}
@@ -59,8 +62,11 @@ def resolve_run(cfg, i):
         fail(f'run "{name}": "seed" must be a non-negative integer, got {seed!r}')
     server = merged("server", cfg.get("server", {}), SERVER)
     slurm = merged("slurm", cfg.get("slurm", {}), SLURM)
-    common = ["--model", server["model"], "--url", "$URL", "--max-model-len", str(server["max_model_len"]),
-              "--out", "$RUN_DIR"]
+    if not isinstance(server["pd"], bool):
+        fail('"server.pd" must be true or false')
+    # --out must stay last: the priming command swaps its value for $PRIME_DIR
+    common = ["--model", server["model"], "--url", "$URL", "--metrics-url", "$METRICS_URL",
+              "--max-model-len", str(server["max_model_len"]), "--out", "$RUN_DIR"]
     run_slurm = {k: raw[k] for k in SLURM if k in raw}  # per-run overrides, e.g. a longer "time"
 
     if mode == "sweep":
@@ -102,10 +108,12 @@ def resolve_run(cfg, i):
     else:
         fail(f'run "{name}": "mode" must be "sweep" or "replay", got {mode!r}')
 
-    def cmd(argv):  # quote everything except the $URL / $RUN_DIR / $PRIME_DIR placeholders, expanded in the job
+    def cmd(argv):  # quote everything except the $URL / $METRICS_URL / $RUN_DIR / $PRIME_DIR placeholders
         return " ".join(a if a.startswith("$") else shlex.quote(a) for a in argv)
 
     slurm = {**slurm, **run_slurm}
+    if server["pd"] and slurm["gpus"] != 2:
+        fail(f'run "{name}": "server.pd" runs a prefill and a decode server, so it needs "gpus": 2')
     out = {
         "RUN_NAME": name, "RUN_MODE": mode,
         "SIM_CMD": cmd(sim), "PRIME_CMD": cmd(prime) if prime else "",
@@ -113,7 +121,7 @@ def resolve_run(cfg, i):
         # vLLM's own seed too, unless the config sets one in server.args
         "SERVE_ARGS": " ".join(shlex.quote(str(a)) for a in
                                (server["args"] if "--seed" in server["args"] else [*server["args"], "--seed", seed])),
-        "VENV_PATH": server["venv"], "SEED": str(seed),
+        "VENV_PATH": server["venv"], "SEED": str(seed), "PD": "1" if server["pd"] else "0",
         "PARTITION": slurm["partition"], "GPUS": str(slurm["gpus"]), "CPUS": str(slurm["cpus"]),
         "MEM": slurm["mem"], "TIME": slurm["time"],
     }
