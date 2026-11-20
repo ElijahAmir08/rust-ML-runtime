@@ -172,7 +172,10 @@ def main() -> None:
 
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
-    sweep(args) if args.mode == "sweep" else replay(args)
+    if args.mode == "sweep":
+        sweep(args)
+    else:
+        replay(args)
 
 
 if __name__ == "__main__":

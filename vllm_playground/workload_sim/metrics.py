@@ -56,6 +56,7 @@ class RunMetrics:
             "ttft": r.ttft,
             "e2e": r.e2e,
             "tpot": r.tpot,
+            "norm_latency": r.norm_latency,
             "mean_itl": np.mean(r.itls) if r.itls else None,
             "error": r.error,
         } for r in self.results])
@@ -86,4 +87,5 @@ class RunMetrics:
             **_stats("tpot", [r.tpot for r in ok if r.tpot is not None]),
             **_stats("itl", [gap for r in ok for gap in r.itls]),
             **_stats("e2e", [r.e2e for r in ok]),
+            **_stats("norm_latency", [r.norm_latency for r in ok if r.norm_latency is not None]),
         }

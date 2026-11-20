@@ -37,3 +37,12 @@ class RequestResult:
         if not self.success or n < 2:
             return None
         return (self.e2e - self.ttft) / (n - 1)
+
+    @property
+    def norm_latency(self) -> float | None:
+        """End-to-end latency per output token: e2e / output tokens ("normalized latency", as in the
+        vLLM/PagedAttention paper). Lets requests of different output lengths be compared."""
+        n = self.received_tokens or len(self.token_times)
+        if not self.success or n < 1:
+            return None
+        return self.e2e / n

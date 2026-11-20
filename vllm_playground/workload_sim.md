@@ -39,9 +39,9 @@ all submitted in parallel. From `vllm_playground/`:
 ./run.sh --local smoke --only scheduler  # inline on a GPU node you're already on (e.g. inside srun)
 ./run.sh --after 12345 baseline_v1       # start only if job 12345 succeeds
 ```
-Each job starts `vllm serve` (fp16, since V100 has no bf16), waits until it is healthy, runs an unmeasured
-60 s priming pass for sweeps (the first run on a fresh server showed a one-time ~9 s stall), runs the
-workload, and stops the server. Every submission is logged in `experiments/runs.tsv` (time, job id, run,
+Each job starts `vllm serve` (fp16, since V100 has no bf16) and waits until it is healthy. For
+`"mode": "sweep"` runs only, it then sends 60 s of unmeasured traffic at the run's highest rate, to absorb
+a one-time ~9 s stall seen on a fresh server. Finally it runs the workload and stops the server. Every submission is logged in `experiments/runs.tsv` (time, job id, run,
 git commit). Results are never overwritten: reusing a results folder, or submitting a changed config into an
 existing one, is refused (use `--tag`).
 
@@ -78,7 +78,7 @@ Everything lands in `results/<experiment>[_<tag>]/<run>/`:
 
 | file | contents |
 |---|---|
-| `sweep_<scenario>_rate<r>_rep<i>.csv` | one row per request: arrival, lengths, ttft, tpot, e2e, mean ITL, error |
+| `sweep_<scenario>_rate<r>_rep<i>.csv` | one row per request: arrival, lengths, ttft, tpot, e2e, norm_latency, mean ITL, error |
 | `..._server.csv` | vLLM gauges every second: running (batch), waiting (queue), KV-cache usage |
 | `sweep_<scenario>_summary.csv` | one row per run (rate × repeat): every summary metric below |
 | `replay_<start>_rep<i>.csv`, `replay_<start>_summary.csv` | the same for a replay |
@@ -94,13 +94,68 @@ load, batch size, queue depth, KV cache and latency over time (select several ru
 `cp -r results/<NAME> baselines/` and commit it. See `grafana/README.md`.
 
 #### Summary metrics
-Client side, over requests that arrived after warmup:
-- `offered_rps`: arrival rate actually generated. `steady_requests_per_s` / `steady_output_tokens_per_s`: requests and tokens completed *inside* the measured interval [warmup, warmup + duration) divided by its length; equals the offered rate when the server keeps up, and isn't diluted by the drain after arrivals stop. (`requests_per_s` / `output_tokens_per_s` use first arrival → last completion instead.)
-- `ttft`, `tpot`, `itl`, `e2e`: mean, p50, p90, p95, p99 in ms. TTFT and E2E are timed from the request's *scheduled* arrival, so client lag counts (`client_max_lag_ms` reports it; a warning prints over 100 ms). TPOT = (e2e − ttft) / (tokens − 1). ITL is the gap between streamed chunks.
+Each run (one rate × one repeat, or one replay repeat) writes one row to `*_summary.csv`. The row starts
+with identifying columns: `scenario`, `rate`, `rep`, `seed` for sweeps, or `start`, `rep`, `seed` for
+replays. The metrics that follow are described below. All times are measured from t = 0, the moment the run
+starts dispatching.
 
-Server side (`srv_*`, from vLLM's `/metrics`):
-- `srv_running_*`, `srv_waiting_*`, `srv_kv_cache_usage_*`: mean / p50 / p95 / max of the 1 s samples after warmup.
-- `srv_queue_mean_ms`, `srv_queue_frac_over_{0.3,1.0}s`, `srv_preemptions`, `srv_prefix_cache_hit_rate`: differences of vLLM's counters over the whole run, *including* warmup requests (vLLM only exposes them in aggregate). Queue-time percentiles aren't reported because vLLM's smallest histogram bucket is 0.3 s.
+**Which requests count.** A request is *measured* if it arrived at or after `warmup` (sweeps use the
+`warmup` from the config; replays use 0). Measured requests stay in the per-request CSV either way. A request
+*succeeds* if it streamed at least one chunk without an HTTP or connection error. Only successful measured
+requests go into the latency stats. Failures are dropped from them silently, so always check
+`requests` against `successes`.
+
+**Bookkeeping**
+| column | meaning |
+|---|---|
+| `start_unix` | wall-clock time of t = 0, used to line runs up with server logs and dashboards |
+| `requests` / `successes` | measured requests sent / measured requests that succeeded |
+| `client_max_lag_ms` | worst gap between a request's scheduled send time and its actual send time, over the whole run (warmup included). A warning prints above 100 ms. If this is large, the client was the bottleneck and the latencies are suspect. |
+
+**Throughput.** There are two windows, and they answer different questions:
+| column | meaning |
+|---|---|
+| `offered_rps` | load actually generated: measured requests ÷ (last measured arrival − first measured arrival). Because arrivals are Poisson, this is close to `rate` but not equal to it. |
+| `steady_window_s` | length of the measured interval [warmup, warmup + duration). For a replay it runs from 0 to the last arrival. |
+| `steady_requests_per_s` | requests that *finished* inside the steady window ÷ its length. Any request counts, including warmup arrivals that finish inside the window. While the server keeps up, this ≈ `offered_rps`. Once it saturates, this levels off at the server's capacity while `offered_rps` keeps rising. **This is the number to use for throughput.** |
+| `steady_output_tokens_per_s` | output tokens streamed inside the steady window ÷ its length. Chunks are counted by when they arrived, and each chunk is worth `received_tokens / chunks` tokens. |
+| `window_s` | first measured arrival → last measured completion. This window includes the drain after arrivals stop. |
+| `requests_per_s`, `output_tokens_per_s`, `prompt_tokens_per_s` | successful measured requests, their output tokens, and their prompt tokens, each ÷ `window_s`. The drain makes these lower than the steady numbers when the server is overloaded. |
+
+**Latency.** Each of these has `_mean_ms`, `_p50_ms`, `_p90_ms`, `_p95_ms` and `_p99_ms` (numpy linear-interpolated percentiles).
+`pXX` is the value XX% of requests (or, for `itl`, of chunk gaps) came in under: p50 is the median, a typical
+request; p95/p99 are the tail, the slowest 1 in 20 / 1 in 100. The mean is pulled up by a few very slow
+requests, so mean ≫ p50 signals a heavy tail. Saturation shows up first in p99, then in p50.
+| metric | definition | what it reflects |
+|---|---|---|
+| `ttft` | scheduled arrival → first streamed chunk | client lag + HTTP + vLLM queue time + prefill (with chunked prefill, a long prompt is split over several engine steps). This is where scheduler queueing shows up. |
+| `e2e` | scheduled arrival → last streamed chunk | the whole request. It is dominated by output length, so compare it only within one scenario. |
+| `norm_latency` | per request: e2e / output tokens (ms per token) | "normalized latency" from the vLLM (PagedAttention) paper: e2e with output length divided out, so it can be compared across scenarios. It mixes TTFT and TPOT: ≈ TPOT for long outputs, ≈ TTFT / tokens for short ones. Its mean against rate is the paper's headline curve. |
+| `tpot` | per request: (e2e − ttft) / (output tokens − 1); requests with fewer than 2 tokens are skipped | decode speed as one user sees it. It rises with batch size and with prefill chunks interleaved into the decode steps. Each request counts once. |
+| `itl` | time between two consecutive output tokens of the same request, as the client sees them (the gap between two chunks, since a chunk is one token here). A request with n output tokens gives n − 1 gaps, and the stats pool every gap of every request. | roughly how long one engine step took. Each step produces one token for every running request, so a gap is the step time: it grows with batch size, and it jumps when the step also prefills a prompt chunk or after a preemption. `tpot` is the *average* of one request's gaps, while `itl` keeps every gap, so its p99 catches individual stalls that `tpot` averages away. |
+
+Timing from the *scheduled* arrival, not from when the client actually sent the request, means client lag is
+counted against the server rather than hidden (this avoids coordinated omission).
+
+**Server side** (`srv_*`, scraped from vLLM's Prometheus `/metrics` every `--monitor-interval`, 1 s by default).
+The full 1 s timeseries is in `..._server.csv`.
+| column | meaning |
+|---|---|
+| `srv_running_{mean,p50,p95,max}` | requests in vLLM's current batch (`num_requests_running`) |
+| `srv_waiting_{mean,p50,p95,max}` | requests queued in vLLM's scheduler and not yet started (`num_requests_waiting`). If this stays above 0, the server is saturated. |
+| `srv_kv_cache_usage_{mean,p50,p95,max}` | fraction (0 to 1) of KV-cache blocks in use. A value near 1 means the batch is memory-bound. |
+| `srv_queue_requests` | number of requests vLLM recorded a queue time for |
+| `srv_queue_mean_ms` | mean time a request waited in vLLM's queue before it was first scheduled |
+| `srv_queue_frac_over_0.3s`, `srv_queue_frac_over_1.0s` | fraction of requests that waited longer than 0.3 s and longer than 1 s |
+| `srv_preemptions` | times vLLM evicted a running request because it ran out of KV blocks; that request's work is recomputed later. Any value above 0 means real KV-cache pressure. |
+| `srv_prefix_cache_hit_rate` | prefix-cache hits ÷ lookups, counted in tokens. It should be ≈ 0, because prompts are random token ids. |
+
+The gauges (`running`, `waiting`, `kv_cache_usage`) use only the samples taken after warmup, and that
+includes the drain until the last request finishes. The queue, preemption and prefix-cache columns are
+differences of vLLM's counters between the start and the end of the run. They therefore *include warmup
+requests*, because vLLM only exposes these counters in aggregate. Queue-time percentiles aren't reported
+because vLLM's smallest histogram bucket is 0.3 s, so the two bucket fractions are exact and an interpolated
+p50 would be a guess.
 
 #### Running the simulator by hand
 Start vllm, then from `vllm_playground/` (inside the vllm venv, needs `aiohttp pandas numpy`):
