@@ -1,0 +1,247 @@
+job: 560189 on node112 at 2026-11-20T14:47:43-08:00, CUDA_VISIBLE_DEVICES=3
+name, pci.bus_id, memory.total [MiB], memory.used [MiB], driver_version
+Tesla V100-SXM2-32GB, 00000000:8A:00.0, 32768 MiB, 0 MiB, 580.126.20
+processes already on our GPU(s) (should be none):
+venv: ../vllm/.venv
+vllm 0.18.1 /home/victor_nardi/RunTimeSystems/rust-ML-runtime/vllm/vllm/__init__.py | torch 2.10.0+cu128 | torch cuda 12.8
+cpus: 40, node load: 3.04 2.53 3.06
++ vllm serve Qwen/Qwen2.5-7B-Instruct --dtype half --max-model-len 8192 --host 127.0.0.1 --port 21512 --no-async-scheduling --seed 0
+waiting for vLLM on http://127.0.0.1:21512 ...
+ready after 101 s
+== server.log
+(APIServer pid=915115) INFO 11-20 14:48:12 [utils.py:233] non-default args: {'model_tag': 'Qwen/Qwen2.5-7B-Instruct', 'host': '127.0.0.1', 'port': 21512, 'model': 'Qwen/Qwen2.5-7B-Instruct', 'dtype': 'half', 'max_model_len': 8192, 'async_scheduling': False}
+(APIServer pid=915115) INFO 11-20 14:48:12 [scheduler.py:231] Chunked prefill is enabled with max_num_batched_tokens=2048.
+(EngineCore pid=915448) INFO 11-20 14:48:48 [cuda.py:317] Using TRITON_ATTN attention backend out of potential backends: ['TRITON_ATTN', 'FLEX_ATTENTION'].
+(EngineCore pid=915448) INFO 11-20 14:49:11 [gpu_worker.py:456] Available KV cache memory: 13.61 GiB
+(EngineCore pid=915448) INFO 11-20 14:49:11 [gpu_worker.py:490] In v0.19, CUDA graph memory profiling will be enabled by default (VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=1), which more accurately accounts for CUDA graph memory during KV cache allocation. To try it now, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=1 and increase --gpu-memory-utilization from 0.9000 to 0.9151 to maintain the same effective KV cache size.
+(EngineCore pid=915448) INFO 11-20 14:49:11 [kv_cache_utils.py:1316] GPU KV cache size: 254,800 tokens
+(EngineCore pid=915448) INFO 11-20 14:49:11 [kv_cache_utils.py:1321] Maximum concurrency for 8,192 tokens per request: 31.10x
+(EngineCore pid=915448) INFO 11-20 14:49:18 [core.py:281] init engine (profile, create kv cache, warmup model) took 17.77 seconds
++ (priming, not measured) python -m workload_sim sweep --model Qwen/Qwen2.5-7B-Instruct --url $URL --metrics-url $METRICS_URL --max-model-len 8192 --out $PRIME_DIR --scenario baseline --rates 0.5 --duration 60 --warmup 0 --seed 1000 --monitor-interval 0 --cooldown 10 --short-ctx 512 --long-ctx 3072
+run info: /home/victor_nardi/RunTimeSystems/rust-ML-runtime/vllm_playground/results/_priming/baseline_v1_sync_sched_rerun/baseline/sweep_baseline_run_info.json
+baseline: sampling lengths from 27,303,999 trace rows
+rep 0 (seed 1000), rate 0.5 req/s
+  36 requests over 58 s
+start_unix                    1.795215e+09
+requests                      3.600000e+01
+successes                     3.600000e+01
+client_max_lag_ms             0.000000e+00
+window_s                      6.810000e+01
+offered_rps                   6.500000e-01
+steady_window_s               6.000000e+01
+steady_requests_per_s         4.200000e-01
+steady_output_tokens_per_s    3.125000e+01
+requests_per_s                5.300000e-01
+output_tokens_per_s           4.404000e+01
+prompt_tokens_per_s           8.497500e+02
+ttft_mean_ms                  1.412960e+03
+ttft_p50_ms                   5.568600e+02
+ttft_p90_ms                   4.907700e+03
+ttft_p95_ms                   5.259320e+03
+ttft_p99_ms                   5.682210e+03
+tpot_mean_ms                  6.474000e+01
+tpot_p50_ms                   3.395000e+01
+tpot_p90_ms                   9.027000e+01
+tpot_p95_ms                   2.351800e+02
+tpot_p99_ms                   4.096200e+02
+itl_mean_ms                   5.531000e+01
+itl_p50_ms                    2.944000e+01
+itl_p90_ms                    3.270000e+01
+itl_p95_ms                    3.849000e+01
+itl_p99_ms                    7.798600e+02
+e2e_mean_ms                   5.965170e+03
+e2e_p50_ms                    3.241640e+03
+e2e_p90_ms                    1.322278e+04
+e2e_p95_ms                    2.080456e+04
+e2e_p99_ms                    2.469396e+04
+norm_latency_mean_ms          1.625100e+02
+norm_latency_p50_ms           6.784000e+01
+norm_latency_p90_ms           3.533800e+02
+norm_latency_p95_ms           5.185500e+02
+norm_latency_p99_ms           1.504810e+03 
+  per-request results: /home/victor_nardi/RunTimeSystems/rust-ML-runtime/vllm_playground/results/_priming/baseline_v1_sync_sched_rerun/baseline/sweep_baseline_rate0.5_rep0.csv
+
++ python -m workload_sim sweep --model Qwen/Qwen2.5-7B-Instruct --url $URL --metrics-url $METRICS_URL --max-model-len 8192 --out $RUN_DIR --scenario baseline --rates 0.5 --repeats 3 --duration 300 --warmup 60 --seed 0 --short-ctx 512 --long-ctx 3072
+run info: /home/victor_nardi/RunTimeSystems/rust-ML-runtime/vllm_playground/results/baseline_v1_sync_sched_rerun/baseline/sweep_baseline_run_info.json
+baseline: sampling lengths from 27,303,999 trace rows
+rep 0 (seed 0), rate 0.5 req/s
+  159 requests over 358 s
+start_unix                    1.795215e+09
+requests                      1.350000e+02
+successes                     1.350000e+02
+client_max_lag_ms             0.000000e+00
+window_s                      2.979800e+02
+offered_rps                   4.600000e-01
+steady_window_s               3.000000e+02
+steady_requests_per_s         4.600000e-01
+steady_output_tokens_per_s    4.901000e+01
+requests_per_s                4.500000e-01
+output_tokens_per_s           4.912000e+01
+prompt_tokens_per_s           8.528600e+02
+ttft_mean_ms                  1.478480e+03
+ttft_p50_ms                   9.312900e+02
+ttft_p90_ms                   4.320900e+03
+ttft_p95_ms                   4.966410e+03
+ttft_p99_ms                   7.631990e+03
+tpot_mean_ms                  6.729000e+01
+tpot_p50_ms                   3.438000e+01
+tpot_p90_ms                   1.008700e+02
+tpot_p95_ms                   1.631500e+02
+tpot_p99_ms                   8.050200e+02
+itl_mean_ms                   5.522000e+01
+itl_p50_ms                    2.879000e+01
+itl_p90_ms                    3.711000e+01
+itl_p95_ms                    4.093000e+01
+itl_p99_ms                    8.911300e+02
+e2e_mean_ms                   7.410580e+03
+e2e_p50_ms                    3.191920e+03
+e2e_p90_ms                    2.020084e+04
+e2e_p95_ms                    2.782399e+04
+e2e_p99_ms                    4.379981e+04
+norm_latency_mean_ms          1.414400e+02
+norm_latency_p50_ms           6.015000e+01
+norm_latency_p90_ms           2.993100e+02
+norm_latency_p95_ms           4.020000e+02
+norm_latency_p99_ms           1.196770e+03
+srv_running_mean              2.890000e+00
+srv_running_p50               2.000000e+00
+srv_running_p95               9.000000e+00
+srv_running_max               1.500000e+01
+srv_waiting_mean              1.100000e-01
+srv_waiting_p50               0.000000e+00
+srv_waiting_p95               1.000000e+00
+srv_waiting_max               4.000000e+00
+srv_kv_cache_usage_mean       3.000000e-02
+srv_kv_cache_usage_p50        2.000000e-02
+srv_kv_cache_usage_p95        1.100000e-01
+srv_kv_cache_usage_max        1.800000e-01
+srv_queue_requests            1.590000e+02
+srv_queue_mean_ms             2.443800e+02
+srv_queue_frac_over_0.3s      1.100000e-01
+srv_queue_frac_over_1.0s      1.000000e-01
+srv_preemptions               0.000000e+00
+srv_prefix_cache_hit_rate     0.000000e+00
+srv_resume_tokens             0.000000e+00 
+  per-request results: /home/victor_nardi/RunTimeSystems/rust-ML-runtime/vllm_playground/results/baseline_v1_sync_sched_rerun/baseline/sweep_baseline_rate0.5_rep0.csv
+
+rep 1 (seed 1), rate 0.5 req/s
+  170 requests over 360 s
+start_unix                    1.795215e+09
+requests                      1.420000e+02
+successes                     1.420000e+02
+client_max_lag_ms             0.000000e+00
+window_s                      3.031800e+02
+offered_rps                   5.000000e-01
+steady_window_s               3.000000e+02
+steady_requests_per_s         4.600000e-01
+steady_output_tokens_per_s    4.887000e+01
+requests_per_s                4.700000e-01
+output_tokens_per_s           5.326000e+01
+prompt_tokens_per_s           7.535800e+02
+ttft_mean_ms                  9.761300e+02
+ttft_p50_ms                   5.864800e+02
+ttft_p90_ms                   2.404930e+03
+ttft_p95_ms                   2.892610e+03
+ttft_p99_ms                   6.160940e+03
+tpot_mean_ms                  6.742000e+01
+tpot_p50_ms                   3.561000e+01
+tpot_p90_ms                   1.163000e+02
+tpot_p95_ms                   2.167700e+02
+tpot_p99_ms                   5.103300e+02
+itl_mean_ms                   4.522000e+01
+itl_p50_ms                    2.948000e+01
+itl_p90_ms                    3.677000e+01
+itl_p95_ms                    3.968000e+01
+itl_p99_ms                    6.529700e+02
+e2e_mean_ms                   6.073450e+03
+e2e_p50_ms                    2.379020e+03
+e2e_p90_ms                    1.620512e+04
+e2e_p95_ms                    2.487716e+04
+e2e_p99_ms                    4.682308e+04
+norm_latency_mean_ms          1.538400e+02
+norm_latency_p50_ms           4.647000e+01
+norm_latency_p90_ms           2.869500e+02
+norm_latency_p95_ms           7.041400e+02
+norm_latency_p99_ms           1.919400e+03
+srv_running_mean              2.470000e+00
+srv_running_p50               2.000000e+00
+srv_running_p95               7.000000e+00
+srv_running_max               1.100000e+01
+srv_waiting_mean              3.000000e-02
+srv_waiting_p50               0.000000e+00
+srv_waiting_p95               0.000000e+00
+srv_waiting_max               2.000000e+00
+srv_kv_cache_usage_mean       3.000000e-02
+srv_kv_cache_usage_p50        1.000000e-02
+srv_kv_cache_usage_p95        1.000000e-01
+srv_kv_cache_usage_max        1.400000e-01
+srv_queue_requests            1.700000e+02
+srv_queue_mean_ms             6.702000e+01
+srv_queue_frac_over_0.3s      4.000000e-02
+srv_queue_frac_over_1.0s      2.000000e-02
+srv_preemptions               0.000000e+00
+srv_prefix_cache_hit_rate     0.000000e+00
+srv_resume_tokens             0.000000e+00 
+  per-request results: /home/victor_nardi/RunTimeSystems/rust-ML-runtime/vllm_playground/results/baseline_v1_sync_sched_rerun/baseline/sweep_baseline_rate0.5_rep1.csv
+
+rep 2 (seed 2), rate 0.5 req/s
+  180 requests over 360 s
+start_unix                    1.795216e+09
+requests                      1.460000e+02
+successes                     1.460000e+02
+client_max_lag_ms             0.000000e+00
+window_s                      3.034400e+02
+offered_rps                   4.900000e-01
+steady_window_s               3.000000e+02
+steady_requests_per_s         5.000000e-01
+steady_output_tokens_per_s    4.827000e+01
+requests_per_s                4.800000e-01
+output_tokens_per_s           4.605000e+01
+prompt_tokens_per_s           6.567900e+02
+ttft_mean_ms                  7.024100e+02
+ttft_p50_ms                   5.009200e+02
+ttft_p90_ms                   1.446180e+03
+ttft_p95_ms                   2.099120e+03
+ttft_p99_ms                   3.484240e+03
+tpot_mean_ms                  4.166000e+01
+tpot_p50_ms                   2.883000e+01
+tpot_p90_ms                   5.556000e+01
+tpot_p95_ms                   7.304000e+01
+tpot_p99_ms                   3.040500e+02
+itl_mean_ms                   3.511000e+01
+itl_p50_ms                    2.635000e+01
+itl_p90_ms                    3.176000e+01
+itl_p95_ms                    3.232000e+01
+itl_p99_ms                    3.196900e+02
+e2e_mean_ms                   4.027520e+03
+e2e_p50_ms                    1.700300e+03
+e2e_p90_ms                    1.206137e+04
+e2e_p95_ms                    1.477189e+04
+e2e_p99_ms                    1.984375e+04
+norm_latency_mean_ms          9.595000e+01
+norm_latency_p50_ms           4.081000e+01
+norm_latency_p90_ms           2.174700e+02
+norm_latency_p95_ms           4.515000e+02
+norm_latency_p99_ms           7.007800e+02
+srv_running_mean              1.820000e+00
+srv_running_p50               1.000000e+00
+srv_running_p95               5.000000e+00
+srv_running_max               7.000000e+00
+srv_waiting_mean              1.000000e-02
+srv_waiting_p50               0.000000e+00
+srv_waiting_p95               0.000000e+00
+srv_waiting_max               1.000000e+00
+srv_kv_cache_usage_mean       2.000000e-02
+srv_kv_cache_usage_p50        1.000000e-02
+srv_kv_cache_usage_p95        5.000000e-02
+srv_kv_cache_usage_max        6.000000e-02
+srv_queue_requests            1.800000e+02
+srv_queue_mean_ms             3.188000e+01
+srv_queue_frac_over_0.3s      3.000000e-02
+srv_queue_frac_over_1.0s      2.000000e-02
+srv_preemptions               0.000000e+00
+srv_prefix_cache_hit_rate     0.000000e+00
+srv_resume_tokens             0.000000e+00 
+  per-request results: /home/victor_nardi/RunTimeSystems/rust-ML-runtime/vllm_playground/results/baseline_v1_sync_sched_rerun/baseline/sweep_baseline_rate0.5_rep2.csv
+
+done after 1316 s

@@ -1,0 +1,20 @@
+{
+  "description": "baseline_v1, rerun of the 4 rates with false prefix-cache hits (scheduler 4, baseline 0.5, kv_cache 0.1/0.15), with the prefix cache reset before every run",
+  "notes": "Reruns only the rates where the previous rate's prompts were still in the prefix cache (same seed -> request i of every rate shares its first tokens), which gave 23-52% false prefix-cache hits. The prefix cache is now reset before every run. Same seed, durations and warmups, so these replace the matching rows of the original one-to-one; every other rate there was unaffected (0% hits).",
+  "seed": 0,
+  "server": {
+    "model": "Qwen/Qwen2.5-7B-Instruct",
+    "max_model_len": 8192,
+    "args": [],
+    "venv": "../vllm/.venv"
+  },
+  "slurm": {"partition": "gpu", "gpus": 1, "cpus": 8, "mem": "64G", "time": "3:00:00"},
+  "runs": [
+    {"name": "scheduler", "mode": "sweep", "scenario": "scheduler",
+     "rates": [4], "repeats": 3, "duration": 180, "warmup": 45},
+    {"name": "baseline", "mode": "sweep", "scenario": "baseline",
+     "rates": [0.5], "repeats": 3, "duration": 300, "warmup": 60},
+    {"name": "kv_cache", "mode": "sweep", "scenario": "kv_cache",
+     "rates": [0.1, 0.15], "repeats": 3, "duration": 480, "warmup": 90}
+  ]
+}

@@ -1,0 +1,1 @@
+vllm serve Qwen/Qwen2.5-7B-Instruct --dtype half --max-model-len 8192 --host 127.0.0.1 --port 21576 --data-parallel-size 2 --seed 0

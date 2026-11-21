@@ -1,0 +1,50 @@
+== prefill.log
+(APIServer pid=2200238) INFO 11-20 15:15:16 [utils.py:233] non-default args: {'model_tag': 'Qwen/Qwen2.5-7B-Instruct', 'host': '127.0.0.1', 'port': 21537, 'model': 'Qwen/Qwen2.5-7B-Instruct', 'dtype': 'half', 'max_model_len': 8192, 'kv_transfer_config': KVTransferConfig(kv_connector='NixlConnector', engine_id='797b1c24-922d-4452-82de-5e1f93b29432', kv_buffer_device='cuda', kv_buffer_size=1000000000.0, kv_role='kv_both', kv_rank=None, kv_parallel_size=1, kv_ip='127.0.0.1', kv_port=14579, kv_connector_extra_config={}, kv_connector_module_path=None, enable_permute_local_kv=False, kv_load_failure_policy='fail')}
+(APIServer pid=2200238) INFO 11-20 15:15:16 [scheduler.py:231] Chunked prefill is enabled with max_num_batched_tokens=2048.
+(APIServer pid=2200238) INFO 11-20 15:15:16 [nixl_connector.py:110] Setting UCX_RCACHE_MAX_UNRELEASED to '1024' to avoid a rare memory leak in UCX when using NIXL.
+(APIServer pid=2200238) INFO 11-20 15:15:16 [nixl_connector.py:123] NIXL is available
+(APIServer pid=2200238) WARNING 11-20 15:15:16 [vllm.py:1189] Turning off hybrid kv cache manager because `--kv-transfer-config` is set. This will reduce the performance of vLLM on LLMs with sliding window attention or Mamba attention. If you are a developer of kv connector, please consider supporting hybrid kv cache manager for your connector by making sure your connector is a subclass of `SupportsHMA` defined in kv_connector/v1/base.py and use --no-disable-hybrid-kv-cache-manager to start vLLM.
+(EngineCore pid=2200476) INFO 11-20 15:15:42 [cuda.py:317] Using TRITON_ATTN attention backend out of potential backends: ['TRITON_ATTN', 'FLEX_ATTENTION'].
+(EngineCore pid=2200476) INFO 11-20 15:16:06 [gpu_worker.py:456] Available KV cache memory: 13.61 GiB
+(EngineCore pid=2200476) INFO 11-20 15:16:06 [gpu_worker.py:490] In v0.19, CUDA graph memory profiling will be enabled by default (VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=1), which more accurately accounts for CUDA graph memory during KV cache allocation. To try it now, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=1 and increase --gpu-memory-utilization from 0.9000 to 0.9151 to maintain the same effective KV cache size.
+(EngineCore pid=2200476) INFO 11-20 15:16:06 [kv_cache_utils.py:1316] GPU KV cache size: 254,800 tokens
+(EngineCore pid=2200476) INFO 11-20 15:16:06 [kv_cache_utils.py:1321] Maximum concurrency for 8,192 tokens per request: 31.10x
+(EngineCore pid=2200476) INFO 11-20 15:16:06 [nixl_connector.py:123] NIXL is available
+(EngineCore pid=2200476) INFO 11-20 15:16:06 [factory.py:64] Creating v1 connector with name: NixlConnector and engine_id: 797b1c24-922d-4452-82de-5e1f93b29432
+(EngineCore pid=2200476) INFO 11-20 15:16:06 [nixl_connector.py:958] Initializing NIXL wrapper
+(EngineCore pid=2200476) INFO 11-20 15:16:06 [nixl_connector.py:959] Initializing NIXL worker 797b1c24-922d-4452-82de-5e1f93b29432
+(EngineCore pid=2200476) 2026-11-20 15:16:07 NIXL INFO    _api.py:405 Backend UCX was instantiated
+(EngineCore pid=2200476) 2026-11-20 15:16:07 NIXL INFO    _api.py:281 Initialized NIXL agent: 4c5a50de-d9af-4120-a6f0-e35661331cd3
+(EngineCore pid=2200476) INFO 11-20 15:16:07 [nixl_connector.py:386] NixlConnector setting KV cache layout to HND for better xfer performance.
+(EngineCore pid=2200476) INFO 11-20 15:16:07 [nixl_connector.py:1164] Detected attention backend TRITON_ATTN
+(EngineCore pid=2200476) INFO 11-20 15:16:07 [nixl_connector.py:1165] Detected kv cache layout HND
+(EngineCore pid=2200476) INFO 11-20 15:16:07 [nixl_connector.py:1528] Registering KV_Caches. use_mla: False, kv_buffer_device: cuda, use_host_buffer: False
+(EngineCore pid=2200476) INFO 11-20 15:16:15 [core.py:281] init engine (profile, create kv cache, warmup model) took 24.76 seconds
+(EngineCore pid=2200476) INFO 11-20 15:16:15 [factory.py:64] Creating v1 connector with name: NixlConnector and engine_id: 797b1c24-922d-4452-82de-5e1f93b29432
+(EngineCore pid=2200476) INFO 11-20 15:16:15 [nixl_connector.py:576] Initializing NIXL Scheduler 797b1c24-922d-4452-82de-5e1f93b29432
+(EngineCore pid=2200476) INFO 11-20 15:16:15 [nixl_connector.py:578] Hybrid Memory Allocator is enabled with NIXL
+== decode.log
+(APIServer pid=2200239) INFO 11-20 15:15:16 [utils.py:233] non-default args: {'model_tag': 'Qwen/Qwen2.5-7B-Instruct', 'host': '127.0.0.1', 'port': 21538, 'model': 'Qwen/Qwen2.5-7B-Instruct', 'dtype': 'half', 'max_model_len': 8192, 'kv_transfer_config': KVTransferConfig(kv_connector='NixlConnector', engine_id='8c477c1a-7934-4284-801c-88e255ebc56d', kv_buffer_device='cuda', kv_buffer_size=1000000000.0, kv_role='kv_both', kv_rank=None, kv_parallel_size=1, kv_ip='127.0.0.1', kv_port=14579, kv_connector_extra_config={}, kv_connector_module_path=None, enable_permute_local_kv=False, kv_load_failure_policy='fail')}
+(APIServer pid=2200239) INFO 11-20 15:15:16 [scheduler.py:231] Chunked prefill is enabled with max_num_batched_tokens=2048.
+(APIServer pid=2200239) INFO 11-20 15:15:16 [nixl_connector.py:110] Setting UCX_RCACHE_MAX_UNRELEASED to '1024' to avoid a rare memory leak in UCX when using NIXL.
+(APIServer pid=2200239) INFO 11-20 15:15:16 [nixl_connector.py:123] NIXL is available
+(APIServer pid=2200239) WARNING 11-20 15:15:16 [vllm.py:1189] Turning off hybrid kv cache manager because `--kv-transfer-config` is set. This will reduce the performance of vLLM on LLMs with sliding window attention or Mamba attention. If you are a developer of kv connector, please consider supporting hybrid kv cache manager for your connector by making sure your connector is a subclass of `SupportsHMA` defined in kv_connector/v1/base.py and use --no-disable-hybrid-kv-cache-manager to start vLLM.
+(EngineCore pid=2200477) INFO 11-20 15:15:42 [cuda.py:317] Using TRITON_ATTN attention backend out of potential backends: ['TRITON_ATTN', 'FLEX_ATTENTION'].
+(EngineCore pid=2200477) INFO 11-20 15:16:06 [gpu_worker.py:456] Available KV cache memory: 13.61 GiB
+(EngineCore pid=2200477) INFO 11-20 15:16:06 [gpu_worker.py:490] In v0.19, CUDA graph memory profiling will be enabled by default (VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=1), which more accurately accounts for CUDA graph memory during KV cache allocation. To try it now, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=1 and increase --gpu-memory-utilization from 0.9000 to 0.9151 to maintain the same effective KV cache size.
+(EngineCore pid=2200477) INFO 11-20 15:16:06 [kv_cache_utils.py:1316] GPU KV cache size: 254,800 tokens
+(EngineCore pid=2200477) INFO 11-20 15:16:06 [kv_cache_utils.py:1321] Maximum concurrency for 8,192 tokens per request: 31.10x
+(EngineCore pid=2200477) INFO 11-20 15:16:06 [nixl_connector.py:123] NIXL is available
+(EngineCore pid=2200477) INFO 11-20 15:16:06 [factory.py:64] Creating v1 connector with name: NixlConnector and engine_id: 8c477c1a-7934-4284-801c-88e255ebc56d
+(EngineCore pid=2200477) INFO 11-20 15:16:06 [nixl_connector.py:958] Initializing NIXL wrapper
+(EngineCore pid=2200477) INFO 11-20 15:16:06 [nixl_connector.py:959] Initializing NIXL worker 8c477c1a-7934-4284-801c-88e255ebc56d
+(EngineCore pid=2200477) 2026-11-20 15:16:07 NIXL INFO    _api.py:405 Backend UCX was instantiated
+(EngineCore pid=2200477) 2026-11-20 15:16:07 NIXL INFO    _api.py:281 Initialized NIXL agent: 3ecbd508-85bc-4091-bac7-12762a483a89
+(EngineCore pid=2200477) INFO 11-20 15:16:07 [nixl_connector.py:386] NixlConnector setting KV cache layout to HND for better xfer performance.
+(EngineCore pid=2200477) INFO 11-20 15:16:07 [nixl_connector.py:1164] Detected attention backend TRITON_ATTN
+(EngineCore pid=2200477) INFO 11-20 15:16:07 [nixl_connector.py:1165] Detected kv cache layout HND
+(EngineCore pid=2200477) INFO 11-20 15:16:07 [nixl_connector.py:1528] Registering KV_Caches. use_mla: False, kv_buffer_device: cuda, use_host_buffer: False
+(EngineCore pid=2200477) INFO 11-20 15:16:15 [core.py:281] init engine (profile, create kv cache, warmup model) took 24.47 seconds
+(EngineCore pid=2200477) INFO 11-20 15:16:15 [factory.py:64] Creating v1 connector with name: NixlConnector and engine_id: 8c477c1a-7934-4284-801c-88e255ebc56d
+(EngineCore pid=2200477) INFO 11-20 15:16:15 [nixl_connector.py:576] Initializing NIXL Scheduler 8c477c1a-7934-4284-801c-88e255ebc56d
+(EngineCore pid=2200477) INFO 11-20 15:16:15 [nixl_connector.py:578] Hybrid Memory Allocator is enabled with NIXL

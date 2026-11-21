@@ -1,0 +1,22 @@
+{
+  "description": "Data-parallel baseline for pd_v1: the same 2 V100s as 2 full replicas (--data-parallel-size 2), each running whole requests; vLLM routes each request to the less busy one",
+  "notes": "Same scenarios, durations, warmups and seed as baseline_v1, with each rate grid roughly doubled for 2 GPUs (single-GPU saturation: scheduler ~11-12, baseline ~1, kv_cache ~0.2-0.3 req/s). pd_v1 and dp2_v1 use identical grids and seeds, so their requests match one-to-one, and rates shared with baseline_v1 match it too. Replay: rate_scale doubled to 0.0038 (~1.5 req/s average). Prefix cache reset before every run.",
+  "seed": 0,
+  "server": {
+    "model": "Qwen/Qwen2.5-7B-Instruct",
+    "max_model_len": 8192,
+    "args": ["--data-parallel-size", "2"],
+    "venv": "../vllm/.venv"
+  },
+  "slurm": {"partition": "gpu", "gpus": 2, "cpus": 8, "mem": "64G", "time": "8:00:00"},
+  "runs": [
+    {"name": "scheduler", "mode": "sweep", "scenario": "scheduler",
+     "rates": [4, 8, 12, 16, 20, 24, 28], "repeats": 3, "duration": 180, "warmup": 45},
+    {"name": "baseline", "mode": "sweep", "scenario": "baseline",
+     "rates": [0.5, 1, 1.5, 2, 2.5, 3], "repeats": 3, "duration": 300, "warmup": 60},
+    {"name": "kv_cache", "mode": "sweep", "scenario": "kv_cache",
+     "rates": [0.1, 0.2, 0.3, 0.45, 0.6, 0.9], "repeats": 3, "duration": 480, "warmup": 90},
+    {"name": "replay_0514", "mode": "replay",
+     "start": "2024-05-14 10:00", "hours": 6, "speedup": 6, "rate_scale": 0.0038, "repeats": 1}
+  ]
+}

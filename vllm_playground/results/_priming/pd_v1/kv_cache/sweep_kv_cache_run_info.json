@@ -1,0 +1,105 @@
+{
+  "started_utc": "2026-11-20T23:33:51+00:00",
+  "argv": [
+    "/home/victor_nardi/RunTimeSystems/rust-ML-runtime/vllm_playground/workload_sim/__main__.py",
+    "sweep",
+    "--model",
+    "Qwen/Qwen2.5-7B-Instruct",
+    "--url",
+    "http://127.0.0.1:21544",
+    "--metrics-url",
+    "http://127.0.0.1:21545,http://127.0.0.1:21546",
+    "--max-model-len",
+    "8192",
+    "--out",
+    "/home/victor_nardi/RunTimeSystems/rust-ML-runtime/vllm_playground/results/_priming/pd_v1/kv_cache",
+    "--scenario",
+    "kv_cache",
+    "--rates",
+    "0.9",
+    "--duration",
+    "60",
+    "--warmup",
+    "0",
+    "--seed",
+    "1000",
+    "--monitor-interval",
+    "0",
+    "--cooldown",
+    "10",
+    "--short-ctx",
+    "512",
+    "--long-ctx",
+    "3072"
+  ],
+  "args": {
+    "mode": "sweep",
+    "model": "Qwen/Qwen2.5-7B-Instruct",
+    "url": "http://127.0.0.1:21544",
+    "metrics_url": [
+      "http://127.0.0.1:21545",
+      "http://127.0.0.1:21546"
+    ],
+    "trace": "/home/victor_nardi/RunTimeSystems/rust-ML-runtime/vllm_playground/AzureLLMInferenceTrace_conv_1week.csv",
+    "out": "/home/victor_nardi/RunTimeSystems/rust-ML-runtime/vllm_playground/results/_priming/pd_v1/kv_cache",
+    "max_model_len": 8192,
+    "seed": 1000,
+    "repeats": 1,
+    "monitor_interval": 0.0,
+    "cooldown": 10.0,
+    "reset_prefix_cache": true,
+    "scenario": "kv_cache",
+    "rates": [
+      0.9
+    ],
+    "duration": 60.0,
+    "warmup": 0.0,
+    "short_ctx": 512,
+    "long_ctx": 3072
+  },
+  "trace": {
+    "path": "/home/victor_nardi/RunTimeSystems/rust-ML-runtime/vllm_playground/AzureLLMInferenceTrace_conv_1week.csv",
+    "bytes": 1135195393,
+    "mtime_utc": "2026-10-22T23:24:42+00:00"
+  },
+  "host": "node112",
+  "python": "3.12.15",
+  "gpu": "Tesla V100-SXM2-32GB, 32768 MiB, 580.126.20\nTesla V100-SXM2-32GB, 32768 MiB, 580.126.20\nTesla V100-SXM2-32GB, 32768 MiB, 580.126.20\nTesla V100-SXM2-32GB, 32768 MiB, 580.126.20",
+  "workload_sim_git": null,
+  "workload_sim_dirty": false,
+  "server": {
+    "version": {
+      "version": "0.18.1"
+    },
+    "models": {
+      "object": "list",
+      "data": [
+        {
+          "id": "Qwen/Qwen2.5-7B-Instruct",
+          "object": "model",
+          "created": 1795217631,
+          "owned_by": "vllm",
+          "root": "Qwen/Qwen2.5-7B-Instruct",
+          "parent": null,
+          "max_model_len": 8192,
+          "permission": [
+            {
+              "id": "modelperm-99636d4a00561e97",
+              "object": "model_permission",
+              "created": 1795217631,
+              "allow_create_engine": false,
+              "allow_sampling": true,
+              "allow_logprobs": true,
+              "allow_search_indices": false,
+              "allow_view": true,
+              "allow_fine_tuning": false,
+              "organization": "*",
+              "group": null,
+              "is_blocking": false
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

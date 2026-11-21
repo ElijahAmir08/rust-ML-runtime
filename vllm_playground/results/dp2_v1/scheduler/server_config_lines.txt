@@ -1,0 +1,15 @@
+== server.log
+INFO 11-20 15:54:07 [utils.py:233] non-default args: {'model_tag': 'Qwen/Qwen2.5-7B-Instruct', 'api_server_count': 2, 'host': '127.0.0.1', 'port': 21560, 'model': 'Qwen/Qwen2.5-7B-Instruct', 'dtype': 'half', 'max_model_len': 8192, 'data_parallel_size': 2}
+INFO 11-20 15:54:07 [scheduler.py:231] Chunked prefill is enabled with max_num_batched_tokens=2048.
+(ApiServer_0 pid=459503) INFO 11-20 15:54:17 [scheduler.py:231] Chunked prefill is enabled with max_num_batched_tokens=2048.
+(ApiServer_1 pid=459504) INFO 11-20 15:54:17 [scheduler.py:231] Chunked prefill is enabled with max_num_batched_tokens=2048.
+(Worker pid=459632) INFO 11-20 15:54:29 [cuda.py:317] Using TRITON_ATTN attention backend out of potential backends: ['TRITON_ATTN', 'FLEX_ATTENTION'].
+(Worker pid=459637) INFO 11-20 15:54:59 [gpu_worker.py:490] In v0.19, CUDA graph memory profiling will be enabled by default (VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=1), which more accurately accounts for CUDA graph memory during KV cache allocation. To try it now, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=1 and increase --gpu-memory-utilization from 0.9000 to 0.9151 to maintain the same effective KV cache size.
+(Worker pid=459632) INFO 11-20 15:54:59 [gpu_worker.py:456] Available KV cache memory: 13.61 GiB
+(Worker pid=459632) INFO 11-20 15:54:59 [gpu_worker.py:490] In v0.19, CUDA graph memory profiling will be enabled by default (VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=1), which more accurately accounts for CUDA graph memory during KV cache allocation. To try it now, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=1 and increase --gpu-memory-utilization from 0.9000 to 0.9151 to maintain the same effective KV cache size.
+(EngineCore_DP1 pid=459502) INFO 11-20 15:54:59 [kv_cache_utils.py:1316] GPU KV cache size: 254,800 tokens
+(EngineCore_DP1 pid=459502) INFO 11-20 15:54:59 [kv_cache_utils.py:1321] Maximum concurrency for 8,192 tokens per request: 31.10x
+(EngineCore_DP0 pid=459501) INFO 11-20 15:54:59 [kv_cache_utils.py:1316] GPU KV cache size: 254,800 tokens
+(EngineCore_DP0 pid=459501) INFO 11-20 15:54:59 [kv_cache_utils.py:1321] Maximum concurrency for 8,192 tokens per request: 31.10x
+(EngineCore_DP1 pid=459502) INFO 11-20 15:55:06 [core.py:281] init engine (profile, create kv cache, warmup model) took 21.79 seconds
+(EngineCore_DP0 pid=459501) INFO 11-20 15:55:06 [core.py:281] init engine (profile, create kv cache, warmup model) took 21.32 seconds

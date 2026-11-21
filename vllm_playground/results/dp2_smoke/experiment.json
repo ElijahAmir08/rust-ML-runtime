@@ -1,0 +1,10 @@
+{
+  "description": "Quick check (~15 min) that the 2-GPU data-parallel baseline (one server, 2 engines) serves the workload end to end.",
+  "seed": 0,
+  "server": {"model": "Qwen/Qwen2.5-7B-Instruct", "max_model_len": 8192, "args": ["--data-parallel-size", "2"], "venv": "../vllm/.venv"},
+  "slurm": {"gpus": 2, "time": "0:45:00"},
+  "runs": [
+    {"name": "mixed", "mode": "sweep", "scenario": "baseline",
+     "rates": [0.5, 2], "repeats": 1, "duration": 60, "warmup": 15}
+  ]
+}

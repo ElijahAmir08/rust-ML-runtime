@@ -1,0 +1,90 @@
+job: 560198 on node116 at 2026-11-20T17:17:53-08:00, CUDA_VISIBLE_DEVICES=0,1
+name, pci.bus_id, memory.total [MiB], memory.used [MiB], driver_version
+Tesla V100-SXM2-32GB, 00000000:18:00.0, 32768 MiB, 0 MiB, 580.126.20
+Tesla V100-SXM2-32GB, 00000000:3B:00.0, 32768 MiB, 0 MiB, 580.126.20
+processes already on our GPU(s) (should be none):
+venv: ../vllm/.venv
+vllm 0.18.1 /home/victor_nardi/RunTimeSystems/rust-ML-runtime/vllm/vllm/__init__.py | torch 2.10.0+cu128 | torch cuda 12.8
+cpus: 24, node load: 1.15 1.05 1.03
++ vllm serve Qwen/Qwen2.5-7B-Instruct --dtype half --max-model-len 8192 --host 127.0.0.1 --port 21584 --data-parallel-size 2 --seed 0
+waiting for vLLM on http://127.0.0.1:21584 ...
+ready after 154 s
+== server.log
+INFO 11-20 17:18:28 [utils.py:233] non-default args: {'model_tag': 'Qwen/Qwen2.5-7B-Instruct', 'api_server_count': 2, 'host': '127.0.0.1', 'port': 21584, 'model': 'Qwen/Qwen2.5-7B-Instruct', 'dtype': 'half', 'max_model_len': 8192, 'data_parallel_size': 2}
+INFO 11-20 17:18:28 [scheduler.py:231] Chunked prefill is enabled with max_num_batched_tokens=2048.
+(ApiServer_1 pid=1189693) INFO 11-20 17:18:49 [scheduler.py:231] Chunked prefill is enabled with max_num_batched_tokens=2048.
+(ApiServer_0 pid=1189692) INFO 11-20 17:18:49 [scheduler.py:231] Chunked prefill is enabled with max_num_batched_tokens=2048.
+(Worker pid=1190078) INFO 11-20 17:19:16 [cuda.py:317] Using TRITON_ATTN attention backend out of potential backends: ['TRITON_ATTN', 'FLEX_ATTENTION'].
+(Worker pid=1190078) INFO 11-20 17:20:13 [gpu_worker.py:456] Available KV cache memory: 13.61 GiB
+(Worker pid=1190078) INFO 11-20 17:20:13 [gpu_worker.py:490] In v0.19, CUDA graph memory profiling will be enabled by default (VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=1), which more accurately accounts for CUDA graph memory during KV cache allocation. To try it now, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=1 and increase --gpu-memory-utilization from 0.9000 to 0.9151 to maintain the same effective KV cache size.
+(EngineCore_DP0 pid=1189687) INFO 11-20 17:20:13 [kv_cache_utils.py:1316] GPU KV cache size: 254,800 tokens
+(EngineCore_DP0 pid=1189687) INFO 11-20 17:20:13 [kv_cache_utils.py:1321] Maximum concurrency for 8,192 tokens per request: 31.10x
+(Worker pid=1190066) INFO 11-20 17:20:13 [gpu_worker.py:490] In v0.19, CUDA graph memory profiling will be enabled by default (VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=1), which more accurately accounts for CUDA graph memory during KV cache allocation. To try it now, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=1 and increase --gpu-memory-utilization from 0.9000 to 0.9151 to maintain the same effective KV cache size.
+(EngineCore_DP1 pid=1189691) INFO 11-20 17:20:13 [kv_cache_utils.py:1316] GPU KV cache size: 254,800 tokens
+(EngineCore_DP1 pid=1189691) INFO 11-20 17:20:13 [kv_cache_utils.py:1321] Maximum concurrency for 8,192 tokens per request: 31.10x
+(EngineCore_DP0 pid=1189687) INFO 11-20 17:20:20 [core.py:281] init engine (profile, create kv cache, warmup model) took 17.42 seconds
+(EngineCore_DP1 pid=1189691) INFO 11-20 17:20:20 [core.py:281] init engine (profile, create kv cache, warmup model) took 17.33 seconds
++ python -m workload_sim replay --model Qwen/Qwen2.5-7B-Instruct --url $URL --metrics-url $METRICS_URL --max-model-len 8192 --out $RUN_DIR --start '2024-05-14 10:00' --hours 6 --speedup 6 --rate-scale 0.0038 --repeats 1 --seed 0
+run info: /home/victor_nardi/RunTimeSystems/rust-ML-runtime/vllm_playground/results/dp2_v1/replay_0514/replay_2024-05-14_1000_run_info.json
+replaying 1,401,486 trace rows from 2024-05-14 10:00 to 2024-05-14 16:00:00 UTC
+rep 0 (seed 0)
+  5331 requests over 3600 s
+start_unix                    1.795224e+09
+requests                      5.331000e+03
+successes                     5.331000e+03
+client_max_lag_ms             1.880000e+00
+window_s                      3.613460e+03
+offered_rps                   1.480000e+00
+steady_window_s               3.599650e+03
+steady_requests_per_s         1.480000e+00
+steady_output_tokens_per_s    1.454600e+02
+requests_per_s                1.480000e+00
+output_tokens_per_s           1.452900e+02
+prompt_tokens_per_s           2.386250e+03
+ttft_mean_ms                  1.513670e+03
+ttft_p50_ms                   8.531800e+02
+ttft_p90_ms                   3.855180e+03
+ttft_p95_ms                   5.100140e+03
+ttft_p99_ms                   8.043200e+03
+tpot_mean_ms                  1.010500e+02
+tpot_p50_ms                   4.682000e+01
+tpot_p90_ms                   2.195700e+02
+tpot_p95_ms                   3.941900e+02
+tpot_p99_ms                   8.380700e+02
+itl_mean_ms                   6.703000e+01
+itl_p50_ms                    3.088000e+01
+itl_p90_ms                    4.023000e+01
+itl_p95_ms                    1.882100e+02
+itl_p99_ms                    9.129400e+02
+e2e_mean_ms                   8.047780e+03
+e2e_p50_ms                    3.506890e+03
+e2e_p90_ms                    2.216727e+04
+e2e_p95_ms                    3.122526e+04
+e2e_p99_ms                    4.953472e+04
+norm_latency_mean_ms          1.948700e+02
+norm_latency_p50_ms           7.569000e+01
+norm_latency_p90_ms           4.502500e+02
+norm_latency_p95_ms           8.102000e+02
+norm_latency_p99_ms           1.703880e+03
+srv_running_mean              1.085000e+01
+srv_running_p50               1.000000e+01
+srv_running_p95               2.200000e+01
+srv_running_max               4.400000e+01
+srv_waiting_mean              3.100000e-01
+srv_waiting_p50               0.000000e+00
+srv_waiting_p95               2.000000e+00
+srv_waiting_max               1.000000e+01
+srv_kv_cache_usage_mean       1.100000e-01
+srv_kv_cache_usage_p50        1.000000e-01
+srv_kv_cache_usage_p95        2.300000e-01
+srv_kv_cache_usage_max        3.900000e-01
+srv_queue_requests            5.331000e+03
+srv_queue_mean_ms             2.023000e+02
+srv_queue_frac_over_0.3s      9.000000e-02
+srv_queue_frac_over_1.0s      6.000000e-02
+srv_preemptions               0.000000e+00
+srv_prefix_cache_hit_rate     0.000000e+00
+srv_resume_tokens             0.000000e+00 
+  per-request results: /home/victor_nardi/RunTimeSystems/rust-ML-runtime/vllm_playground/results/dp2_v1/replay_0514/replay_2024-05-14_1000_rep0.csv
+
+done after 3790 s

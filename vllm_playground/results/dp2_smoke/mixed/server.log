@@ -1,0 +1,616 @@
+INFO 11-20 14:16:18 [serve.py:106] Defaulting api_server_count to data_parallel_size (2).
+INFO 11-20 14:16:18 [utils.py:297] 
+INFO 11-20 14:16:18 [utils.py:297]        █     █     █▄   ▄█
+INFO 11-20 14:16:18 [utils.py:297]  ▄▄ ▄█ █     █     █ ▀▄▀ █  version 0.18.1
+INFO 11-20 14:16:18 [utils.py:297]   █▄█▀ █     █     █     █  model   Qwen/Qwen2.5-7B-Instruct
+INFO 11-20 14:16:18 [utils.py:297]    ▀▀  ▀▀▀▀▀ ▀▀▀▀▀ ▀     ▀
+INFO 11-20 14:16:18 [utils.py:297] 
+INFO 11-20 14:16:18 [utils.py:233] non-default args: {'model_tag': 'Qwen/Qwen2.5-7B-Instruct', 'api_server_count': 2, 'host': '127.0.0.1', 'port': 21208, 'model': 'Qwen/Qwen2.5-7B-Instruct', 'dtype': 'half', 'max_model_len': 8192, 'data_parallel_size': 2}
+INFO 11-20 14:16:18 [arg_utils.py:645] HF_HUB_OFFLINE is True, replace model_id [Qwen/Qwen2.5-7B-Instruct] to model_path [/home/victor_nardi/.cache/huggingface/hub/models--Qwen--Qwen2.5-7B-Instruct/snapshots/a09a35458c702b33eeacc393d103063234e8bc28]
+INFO 11-20 14:16:18 [model.py:533] Resolved architecture: Qwen2ForCausalLM
+WARNING 11-20 14:16:18 [model.py:1920] Casting torch.bfloat16 to torch.float16.
+INFO 11-20 14:16:18 [model.py:1582] Using max model len 8192
+INFO 11-20 14:16:18 [scheduler.py:231] Chunked prefill is enabled with max_num_batched_tokens=2048.
+INFO 11-20 14:16:18 [vllm.py:775] Asynchronous scheduling is enabled.
+INFO 11-20 14:16:18 [utils.py:889] Started DP Coordinator process (PID: 1306409)
+INFO 11-20 14:16:18 [utils.py:217] Started 2 API server processes
+(EngineCore_DP1 pid=1306413) WARNING 11-20 14:16:37 [multiproc_executor.py:997] Reducing Torch parallelism from 24 threads to 1 to avoid unnecessary CPU contention. Set OMP_NUM_THREADS in the external environment to tune this value as needed.
+(EngineCore_DP0 pid=1306412) INFO 11-20 14:16:37 [core.py:103] Initializing a V1 LLM engine (v0.18.1) with config: model='/home/victor_nardi/.cache/huggingface/hub/models--Qwen--Qwen2.5-7B-Instruct/snapshots/a09a35458c702b33eeacc393d103063234e8bc28', speculative_config=None, tokenizer='/home/victor_nardi/.cache/huggingface/hub/models--Qwen--Qwen2.5-7B-Instruct/snapshots/a09a35458c702b33eeacc393d103063234e8bc28', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.float16, max_seq_len=8192, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, decode_context_parallel_size=1, dcp_comm_backend=ag_rs, disable_custom_all_reduce=False, quantization=None, enforce_eager=False, enable_return_routed_experts=False, kv_cache_dtype=auto, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, kv_cache_metrics=False, kv_cache_metrics_sample=0.01, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False, enable_mfu_metrics=False, enable_mm_processor_stats=False, enable_logging_iteration_details=False), seed=0, served_model_name=/home/victor_nardi/.cache/huggingface/hub/models--Qwen--Qwen2.5-7B-Instruct/snapshots/a09a35458c702b33eeacc393d103063234e8bc28, enable_prefix_caching=True, enable_chunked_prefill=True, pooler_config=None, compilation_config={'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'splitting_ops': ['vllm::unified_attention', 'vllm::unified_attention_with_output', 'vllm::unified_mla_attention', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::linear_attention', 'vllm::plamo2_mamba_mixer', 'vllm::gdn_attention_core', 'vllm::olmo_hybrid_gdn_full_forward', 'vllm::kda_attention', 'vllm::sparse_attn_indexer', 'vllm::rocm_aiter_sparse_attn_indexer', 'vllm::unified_kv_cache_update', 'vllm::unified_mla_kv_cache_update'], 'compile_mm_encoder': False, 'compile_sizes': [], 'compile_ranges_endpoints': [2048], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176, 184, 192, 200, 208, 216, 224, 232, 240, 248, 256, 272, 288, 304, 320, 336, 352, 368, 384, 400, 416, 432, 448, 464, 480, 496, 512], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': False, 'fuse_attn_quant': False, 'enable_sp': False, 'fuse_gemm_comms': False, 'fuse_allreduce_rms': False}, 'max_cudagraph_capture_size': 512, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': False}, 'local_cache_dir': None, 'fast_moe_cold_start': True, 'static_all_moe_layers': []}
+(EngineCore_DP0 pid=1306412) WARNING 11-20 14:16:37 [multiproc_executor.py:997] Reducing Torch parallelism from 24 threads to 1 to avoid unnecessary CPU contention. Set OMP_NUM_THREADS in the external environment to tune this value as needed.
+(EngineCore_DP0 pid=1306412) INFO 11-20 14:16:37 [multiproc_executor.py:134] DP group leader: node_rank=0, node_rank_within_dp=0, master_addr=127.0.0.1, mq_connect_ip=10.1.50.123 (local), world_size=1, local_world_size=1
+(EngineCore_DP1 pid=1306413) INFO 11-20 14:16:37 [multiproc_executor.py:134] DP group leader: node_rank=0, node_rank_within_dp=0, master_addr=127.0.0.1, mq_connect_ip=10.1.50.123 (local), world_size=1, local_world_size=1
+(ApiServer_0 pid=1306414) INFO 11-20 14:16:43 [arg_utils.py:645] HF_HUB_OFFLINE is True, replace model_id [Qwen/Qwen2.5-7B-Instruct] to model_path [/home/victor_nardi/.cache/huggingface/hub/models--Qwen--Qwen2.5-7B-Instruct/snapshots/a09a35458c702b33eeacc393d103063234e8bc28]
+(ApiServer_0 pid=1306414) INFO 11-20 14:16:43 [model.py:533] Resolved architecture: Qwen2ForCausalLM
+(ApiServer_0 pid=1306414) WARNING 11-20 14:16:43 [model.py:1920] Casting torch.bfloat16 to torch.float16.
+(ApiServer_0 pid=1306414) INFO 11-20 14:16:43 [model.py:1582] Using max model len 8192
+(ApiServer_0 pid=1306414) INFO 11-20 14:16:43 [scheduler.py:231] Chunked prefill is enabled with max_num_batched_tokens=2048.
+(ApiServer_0 pid=1306414) INFO 11-20 14:16:43 [vllm.py:775] Asynchronous scheduling is enabled.
+(ApiServer_1 pid=1306415) INFO 11-20 14:16:43 [arg_utils.py:645] HF_HUB_OFFLINE is True, replace model_id [Qwen/Qwen2.5-7B-Instruct] to model_path [/home/victor_nardi/.cache/huggingface/hub/models--Qwen--Qwen2.5-7B-Instruct/snapshots/a09a35458c702b33eeacc393d103063234e8bc28]
+(ApiServer_1 pid=1306415) INFO 11-20 14:16:43 [model.py:533] Resolved architecture: Qwen2ForCausalLM
+(ApiServer_1 pid=1306415) WARNING 11-20 14:16:43 [model.py:1920] Casting torch.bfloat16 to torch.float16.
+(ApiServer_1 pid=1306415) INFO 11-20 14:16:43 [model.py:1582] Using max model len 8192
+(ApiServer_1 pid=1306415) INFO 11-20 14:16:43 [scheduler.py:231] Chunked prefill is enabled with max_num_batched_tokens=2048.
+(ApiServer_1 pid=1306415) INFO 11-20 14:16:43 [vllm.py:775] Asynchronous scheduling is enabled.
+(Worker pid=1306696) INFO 11-20 14:17:04 [parallel_state.py:1395] world_size=1 rank=0 local_rank=0 distributed_init_method=tcp://127.0.0.1:41493 backend=nccl
+(Worker pid=1306696) INFO 11-20 14:17:04 [parallel_state.py:1717] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank N/A, EPLB rank N/A
+(Worker pid=1306697) INFO 11-20 14:17:04 [parallel_state.py:1395] world_size=1 rank=0 local_rank=1 distributed_init_method=tcp://127.0.0.1:54983 backend=nccl
+(Worker pid=1306697) INFO 11-20 14:17:04 [parallel_state.py:1717] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, EP rank N/A, EPLB rank N/A
+(Worker pid=1306696) INFO 11-20 14:17:05 [gpu_model_runner.py:4481] Starting to load model /home/victor_nardi/.cache/huggingface/hub/models--Qwen--Qwen2.5-7B-Instruct/snapshots/a09a35458c702b33eeacc393d103063234e8bc28...
+(Worker pid=1306697) INFO 11-20 14:17:05 [gpu_model_runner.py:4481] Starting to load model /home/victor_nardi/.cache/huggingface/hub/models--Qwen--Qwen2.5-7B-Instruct/snapshots/a09a35458c702b33eeacc393d103063234e8bc28...
+(Worker pid=1306696) ERROR 11-20 14:17:05 [fa_utils.py:145] Cannot use FA version 2 is not supported due to FA2 is only supported on devices with compute capability >= 8
+(Worker pid=1306697) ERROR 11-20 14:17:05 [fa_utils.py:145] Cannot use FA version 2 is not supported due to FA2 is only supported on devices with compute capability >= 8
+(Worker pid=1306696) INFO 11-20 14:17:07 [cuda.py:317] Using TRITON_ATTN attention backend out of potential backends: ['TRITON_ATTN', 'FLEX_ATTENTION'].
+(Worker pid=1306697) <frozen importlib._bootstrap_external>:1301: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker pid=1306697) <frozen importlib._bootstrap_external>:1301: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker pid=1306696) <frozen importlib._bootstrap_external>:1301: FutureWarning: The cuda.cudart module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.runtime module instead.
+(Worker pid=1306696) <frozen importlib._bootstrap_external>:1301: FutureWarning: The cuda.nvrtc module is deprecated and will be removed in a future release, please switch to use the cuda.bindings.nvrtc module instead.
+(Worker pid=1306697) Loading safetensors checkpoint shards:   0% Completed | 0/4 [00:00<?, ?it/s]
+(Worker pid=1306696) Loading safetensors checkpoint shards:   0% Completed | 0/4 [00:00<?, ?it/s]
+(Worker pid=1306697) Loading safetensors checkpoint shards:  25% Completed | 1/4 [00:03<00:10,  3.44s/it]
+(Worker pid=1306696) Loading safetensors checkpoint shards:  25% Completed | 1/4 [00:03<00:10,  3.51s/it]
+(Worker pid=1306697) Loading safetensors checkpoint shards:  50% Completed | 2/4 [00:06<00:06,  3.41s/it]
+(Worker pid=1306696) Loading safetensors checkpoint shards:  50% Completed | 2/4 [00:06<00:06,  3.47s/it]
+(Worker pid=1306697) Loading safetensors checkpoint shards:  75% Completed | 3/4 [00:10<00:03,  3.44s/it]
+(Worker pid=1306696) Loading safetensors checkpoint shards:  75% Completed | 3/4 [00:10<00:03,  3.46s/it]
+(Worker pid=1306697) Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:13<00:00,  3.34s/it]
+(Worker pid=1306697) Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:13<00:00,  3.37s/it]
+(Worker pid=1306697) 
+(Worker pid=1306696) Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:13<00:00,  3.32s/it]
+(Worker pid=1306696) Loading safetensors checkpoint shards: 100% Completed | 4/4 [00:13<00:00,  3.38s/it]
+(Worker pid=1306696) 
+(Worker pid=1306696) INFO 11-20 14:17:21 [default_loader.py:384] Loading weights took 13.59 seconds
+(Worker pid=1306696) INFO 11-20 14:17:21 [gpu_model_runner.py:4566] Model loading took 14.25 GiB memory and 15.915130 seconds
+(Worker pid=1306696) INFO 11-20 14:17:28 [backends.py:988] Using cache directory: /home/victor_nardi/.cache/vllm/torch_compile_cache/b5d84b2d99/rank_0_0/backbone for vLLM's torch.compile
+(Worker pid=1306696) INFO 11-20 14:17:28 [backends.py:1048] Dynamo bytecode transform time: 6.38 s
+(Worker pid=1306696) INFO 11-20 14:17:29 [backends.py:284] Directly load the compiled graph(s) for compile range (1, 2048) from the cache, took 1.075 s
+(Worker pid=1306696) INFO 11-20 14:17:29 [monitor.py:48] torch.compile took 7.69 s in total
+(Worker pid=1306696) INFO 11-20 14:17:29 [decorators.py:296] Directly load AOT compilation from path /home/victor_nardi/.cache/vllm/torch_compile_cache/torch_aot_compile/79b9bd43442fcfe549f66398faf22adde28e5c97a3c7cf1807da02a3361c8198/rank_0_0/model
+(Worker pid=1306696) INFO 11-20 14:17:30 [monitor.py:76] Initial profiling/warmup run took 0.12 s
+(Worker pid=1306696) INFO 11-20 14:17:31 [kv_cache_utils.py:826] Overriding num_gpu_blocks=0 with num_gpu_blocks_override=512
+(Worker pid=1306696) INFO 11-20 14:17:31 [gpu_model_runner.py:5607] Profiling CUDA graph memory: PIECEWISE=51 (largest=512), FULL=35 (largest=256)
+(Worker pid=1306696) INFO 11-20 14:17:32 [gpu_model_runner.py:5686] Estimated CUDA graph memory: 0.48 GiB total
+(Worker pid=1306696) INFO 11-20 14:17:32 [gpu_worker.py:456] Available KV cache memory: 13.61 GiB
+(Worker pid=1306696) INFO 11-20 14:17:32 [gpu_worker.py:490] In v0.19, CUDA graph memory profiling will be enabled by default (VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=1), which more accurately accounts for CUDA graph memory during KV cache allocation. To try it now, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=1 and increase --gpu-memory-utilization from 0.9000 to 0.9151 to maintain the same effective KV cache size.
+(EngineCore_DP0 pid=1306412) INFO 11-20 14:17:32 [kv_cache_utils.py:1316] GPU KV cache size: 254,800 tokens
+(EngineCore_DP0 pid=1306412) INFO 11-20 14:17:32 [kv_cache_utils.py:1321] Maximum concurrency for 8,192 tokens per request: 31.10x
+(Worker pid=1306696) Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   0%|          | 0/51 [00:00<?, ?it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   2%|▏         | 1/51 [00:00<00:05,  9.73it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   4%|▍         | 2/51 [00:00<00:04,  9.84it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   6%|▌         | 3/51 [00:00<00:04,  9.84it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   8%|▊         | 4/51 [00:00<00:04,  9.88it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  12%|█▏        | 6/51 [00:00<00:04,  9.95it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  16%|█▌        | 8/51 [00:00<00:05,  8.21it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  20%|█▉        | 10/51 [00:01<00:04,  9.06it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  24%|██▎       | 12/51 [00:01<00:04,  9.65it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  27%|██▋       | 14/51 [00:01<00:03, 10.11it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  31%|███▏      | 16/51 [00:01<00:03, 10.14it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  35%|███▌      | 18/51 [00:01<00:02, 11.01it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  39%|███▉      | 20/51 [00:01<00:02, 11.61it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  43%|████▎     | 22/51 [00:02<00:02, 12.13it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  47%|████▋     | 24/51 [00:02<00:02, 12.55it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  51%|█████     | 26/51 [00:02<00:01, 12.86it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  55%|█████▍    | 28/51 [00:02<00:01, 13.09it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  59%|█████▉    | 30/51 [00:02<00:01, 12.87it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  63%|██████▎   | 32/51 [00:02<00:01, 12.78it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  67%|██████▋   | 34/51 [00:03<00:01, 13.05it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  71%|███████   | 36/51 [00:03<00:01, 13.22it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  75%|███████▍  | 38/51 [00:03<00:00, 13.43it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  78%|███████▊  | 40/51 [00:03<00:00, 13.69it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  82%|████████▏ | 42/51 [00:03<00:00, 14.54it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  86%|████████▋ | 44/51 [00:03<00:00, 15.49it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  92%|█████████▏| 47/51 [00:03<00:00, 17.41it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  98%|█████████▊| 50/51 [00:03<00:00, 18.71it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE): 100%|██████████| 51/51 [00:04<00:00, 12.72it/s]
+(Worker pid=1306696) Capturing CUDA graphs (decode, FULL):   0%|          | 0/35 [00:00<?, ?it/s]Capturing CUDA graphs (decode, FULL):   6%|▌         | 2/35 [00:00<00:02, 13.07it/s]Capturing CUDA graphs (decode, FULL):  11%|█▏        | 4/35 [00:00<00:02, 13.25it/s]Capturing CUDA graphs (decode, FULL):  17%|█▋        | 6/35 [00:00<00:02, 13.21it/s]Capturing CUDA graphs (decode, FULL):  23%|██▎       | 8/35 [00:00<00:02, 13.31it/s]Capturing CUDA graphs (decode, FULL):  29%|██▊       | 10/35 [00:00<00:01, 13.36it/s](Worker pid=1306697) INFO 11-20 14:17:38 [backends.py:371] Cache the graph of compile range (1, 2048) for later use
+Capturing CUDA graphs (decode, FULL):  34%|███▍      | 12/35 [00:00<00:01, 13.45it/s]Capturing CUDA graphs (decode, FULL):  40%|████      | 14/35 [00:01<00:01, 13.21it/s]Capturing CUDA graphs (decode, FULL):  46%|████▌     | 16/35 [00:01<00:01, 13.13it/s]Capturing CUDA graphs (decode, FULL):  51%|█████▏    | 18/35 [00:01<00:01, 13.41it/s]Capturing CUDA graphs (decode, FULL):  57%|█████▋    | 20/35 [00:01<00:01, 13.64it/s]Capturing CUDA graphs (decode, FULL):  63%|██████▎   | 22/35 [00:01<00:00, 14.00it/s]Capturing CUDA graphs (decode, FULL):  69%|██████▊   | 24/35 [00:01<00:00, 14.30it/s]Capturing CUDA graphs (decode, FULL):  74%|███████▍  | 26/35 [00:01<00:00, 15.52it/s]Capturing CUDA graphs (decode, FULL):  80%|████████  | 28/35 [00:01<00:00, 16.36it/s]Capturing CUDA graphs (decode, FULL):  86%|████████▌ | 30/35 [00:02<00:00, 14.97it/s]Capturing CUDA graphs (decode, FULL):  94%|█████████▍| 33/35 [00:02<00:00, 17.02it/s]Capturing CUDA graphs (decode, FULL): 100%|██████████| 35/35 [00:02<00:00, 17.25it/s]Capturing CUDA graphs (decode, FULL): 100%|██████████| 35/35 [00:02<00:00, 14.70it/s]
+(Worker pid=1306696) INFO 11-20 14:17:40 [gpu_model_runner.py:5746] Graph capturing finished in 7 secs, took 0.44 GiB
+(Worker pid=1306696) INFO 11-20 14:17:40 [gpu_worker.py:617] CUDA graph pool memory: 0.44 GiB (actual), 0.48 GiB (estimated), difference: 0.04 GiB (9.3%).
+(EngineCore_DP0 pid=1306412) INFO 11-20 14:17:40 [core.py:281] init engine (profile, create kv cache, warmup model) took 18.08 seconds
+(EngineCore_DP0 pid=1306412) INFO 11-20 14:17:50 [core.py:882] Waiting for READY message from DP Coordinator...
+(Worker pid=1306697) INFO 11-20 14:17:55 [kv_cache_utils.py:826] Overriding num_gpu_blocks=0 with num_gpu_blocks_override=512
+(Worker pid=1306697) INFO 11-20 14:17:55 [gpu_model_runner.py:5607] Profiling CUDA graph memory: PIECEWISE=51 (largest=512), FULL=35 (largest=256)
+(Worker pid=1306697) INFO 11-20 14:17:59 [gpu_model_runner.py:5686] Estimated CUDA graph memory: 0.48 GiB total
+(Worker pid=1306697) INFO 11-20 14:17:59 [gpu_worker.py:490] In v0.19, CUDA graph memory profiling will be enabled by default (VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=1), which more accurately accounts for CUDA graph memory during KV cache allocation. To try it now, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=1 and increase --gpu-memory-utilization from 0.9000 to 0.9151 to maintain the same effective KV cache size.
+(EngineCore_DP1 pid=1306413) INFO 11-20 14:17:59 [kv_cache_utils.py:1316] GPU KV cache size: 246,112 tokens
+(EngineCore_DP1 pid=1306413) INFO 11-20 14:17:59 [kv_cache_utils.py:1321] Maximum concurrency for 8,192 tokens per request: 30.04x
+(Worker pid=1306697) Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   0%|          | 0/51 [00:00<?, ?it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   2%|▏         | 1/51 [00:00<00:05,  9.36it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   4%|▍         | 2/51 [00:00<00:05,  9.49it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   6%|▌         | 3/51 [00:00<00:05,  9.55it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):   8%|▊         | 4/51 [00:00<00:04,  9.59it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  10%|▉         | 5/51 [00:00<00:04,  9.58it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  12%|█▏        | 6/51 [00:00<00:04,  9.62it/s](EngineCore_DP0 pid=1306412) INFO 11-20 14:18:00 [core.py:882] Waiting for READY message from DP Coordinator...
+Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  14%|█▎        | 7/51 [00:00<00:04,  9.62it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  16%|█▌        | 8/51 [00:00<00:04,  9.64it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  20%|█▉        | 10/51 [00:01<00:04, 10.15it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  24%|██▎       | 12/51 [00:01<00:03, 10.40it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  27%|██▋       | 14/51 [00:01<00:03,  9.92it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  29%|██▉       | 15/51 [00:01<00:03,  9.27it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  33%|███▎      | 17/51 [00:01<00:03, 10.12it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  37%|███▋      | 19/51 [00:01<00:02, 10.97it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  41%|████      | 21/51 [00:02<00:02, 11.60it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  45%|████▌     | 23/51 [00:02<00:02, 12.07it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  49%|████▉     | 25/51 [00:02<00:02, 12.41it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  53%|█████▎    | 27/51 [00:02<00:01, 12.65it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  57%|█████▋    | 29/51 [00:02<00:01, 12.65it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  61%|██████    | 31/51 [00:02<00:01, 12.56it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  65%|██████▍   | 33/51 [00:02<00:01, 12.60it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  69%|██████▊   | 35/51 [00:03<00:01, 12.83it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  73%|███████▎  | 37/51 [00:03<00:01, 12.84it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  76%|███████▋  | 39/51 [00:03<00:00, 13.11it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  80%|████████  | 41/51 [00:03<00:00, 13.74it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  84%|████████▍ | 43/51 [00:03<00:00, 14.66it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  88%|████████▊ | 45/51 [00:03<00:00, 15.70it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE):  94%|█████████▍| 48/51 [00:03<00:00, 17.17it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE): 100%|██████████| 51/51 [00:04<00:00, 17.99it/s]Capturing CUDA graphs (mixed prefill-decode, PIECEWISE): 100%|██████████| 51/51 [00:04<00:00, 12.55it/s]
+(Worker pid=1306697) Capturing CUDA graphs (decode, FULL):   0%|          | 0/35 [00:00<?, ?it/s]Capturing CUDA graphs (decode, FULL):   6%|▌         | 2/35 [00:00<00:02, 12.97it/s]Capturing CUDA graphs (decode, FULL):  11%|█▏        | 4/35 [00:00<00:02, 13.08it/s]Capturing CUDA graphs (decode, FULL):  17%|█▋        | 6/35 [00:00<00:02, 13.13it/s]Capturing CUDA graphs (decode, FULL):  23%|██▎       | 8/35 [00:00<00:02, 13.19it/s]Capturing CUDA graphs (decode, FULL):  29%|██▊       | 10/35 [00:00<00:01, 13.13it/s]Capturing CUDA graphs (decode, FULL):  34%|███▍      | 12/35 [00:00<00:01, 13.26it/s]Capturing CUDA graphs (decode, FULL):  40%|████      | 14/35 [00:01<00:01, 13.00it/s]Capturing CUDA graphs (decode, FULL):  46%|████▌     | 16/35 [00:01<00:01, 12.91it/s]Capturing CUDA graphs (decode, FULL):  51%|█████▏    | 18/35 [00:01<00:01, 13.19it/s]Capturing CUDA graphs (decode, FULL):  57%|█████▋    | 20/35 [00:01<00:01, 13.43it/s]Capturing CUDA graphs (decode, FULL):  63%|██████▎   | 22/35 [00:01<00:00, 13.76it/s]Capturing CUDA graphs (decode, FULL):  69%|██████▊   | 24/35 [00:01<00:00, 13.40it/s]Capturing CUDA graphs (decode, FULL):  74%|███████▍  | 26/35 [00:01<00:00, 14.64it/s]Capturing CUDA graphs (decode, FULL):  80%|████████  | 28/35 [00:02<00:00, 15.61it/s]Capturing CUDA graphs (decode, FULL):  86%|████████▌ | 30/35 [00:04<00:02,  2.34it/s]Capturing CUDA graphs (decode, FULL):  94%|█████████▍| 33/35 [00:04<00:00,  3.60it/s]Capturing CUDA graphs (decode, FULL): 100%|██████████| 35/35 [00:05<00:00,  2.66it/s]Capturing CUDA graphs (decode, FULL): 100%|██████████| 35/35 [00:05<00:00,  5.85it/s]
+(Worker pid=1306697) INFO 11-20 14:18:10 [gpu_worker.py:617] CUDA graph pool memory: 0.44 GiB (actual), 0.48 GiB (estimated), difference: 0.04 GiB (9.3%).
+(EngineCore_DP1 pid=1306413) INFO 11-20 14:18:10 [core.py:281] init engine (profile, create kv cache, warmup model) took 48.88 seconds
+(EngineCore_DP0 pid=1306412) INFO 11-20 14:18:10 [core.py:882] Waiting for READY message from DP Coordinator...
+INFO 11-20 14:18:11 [coordinator.py:205] All engine subscriptions received by DP coordinator
+(EngineCore_DP1 pid=1306413) INFO 11-20 14:18:11 [vllm.py:775] Asynchronous scheduling is enabled.
+(EngineCore_DP0 pid=1306412) INFO 11-20 14:18:11 [vllm.py:775] Asynchronous scheduling is enabled.
+INFO 11-20 14:18:11 [utils.py:250] Waiting for API servers to complete ...
+(ApiServer_0 pid=1306414) WARNING 11-20 14:18:11 [loggers.py:1271] AsyncLLM created with api_server_count more than 1; disabling stats logging to avoid incomplete stats.
+(ApiServer_1 pid=1306415) WARNING 11-20 14:18:11 [loggers.py:1271] AsyncLLM created with api_server_count more than 1; disabling stats logging to avoid incomplete stats.
+(ApiServer_0 pid=1306414) INFO 11-20 14:18:11 [api_server.py:576] Supported tasks: ['generate']
+(ApiServer_1 pid=1306415) INFO 11-20 14:18:11 [api_server.py:576] Supported tasks: ['generate']
+(ApiServer_0 pid=1306414) WARNING 11-20 14:18:11 [model.py:1376] Default vLLM sampling parameters have been overridden by the model's `generation_config.json`: `{'repetition_penalty': 1.05, 'temperature': 0.7, 'top_k': 20, 'top_p': 0.8}`. If this is not intended, please relaunch vLLM instance with `--generation-config vllm`.
+(ApiServer_1 pid=1306415) WARNING 11-20 14:18:11 [model.py:1376] Default vLLM sampling parameters have been overridden by the model's `generation_config.json`: `{'repetition_penalty': 1.05, 'temperature': 0.7, 'top_k': 20, 'top_p': 0.8}`. If this is not intended, please relaunch vLLM instance with `--generation-config vllm`.
+(ApiServer_0 pid=1306414) INFO 11-20 14:18:11 [hf.py:320] Detected the chat template content format to be 'string'. You can set `--chat-template-content-format` to override this.
+(ApiServer_0 pid=1306414) INFO 11-20 14:18:12 [api_server.py:580] Starting vLLM server on http://127.0.0.1:21208
+(ApiServer_0 pid=1306414) INFO 11-20 14:18:12 [launcher.py:37] Available routes are:
+(ApiServer_0 pid=1306414) INFO 11-20 14:18:12 [launcher.py:46] Route: /openapi.json, Methods: HEAD, GET
+(ApiServer_0 pid=1306414) INFO 11-20 14:18:12 [launcher.py:46] Route: /docs, Methods: HEAD, GET
+(ApiServer_0 pid=1306414) INFO 11-20 14:18:12 [launcher.py:46] Route: /docs/oauth2-redirect, Methods: HEAD, GET
+(ApiServer_0 pid=1306414) INFO 11-20 14:18:12 [launcher.py:46] Route: /redoc, Methods: HEAD, GET
+(ApiServer_0 pid=1306414) INFO 11-20 14:18:12 [launcher.py:46] Route: /metrics, Methods: GET
+(ApiServer_1 pid=1306415) INFO 11-20 14:18:12 [hf.py:320] Detected the chat template content format to be 'string'. You can set `--chat-template-content-format` to override this.
+(ApiServer_1 pid=1306415) INFO 11-20 14:18:12 [api_server.py:580] Starting vLLM server on http://127.0.0.1:21208
+(ApiServer_1 pid=1306415) INFO 11-20 14:18:12 [launcher.py:37] Available routes are:
+(ApiServer_1 pid=1306415) INFO 11-20 14:18:12 [launcher.py:46] Route: /openapi.json, Methods: HEAD, GET
+(ApiServer_1 pid=1306415) INFO 11-20 14:18:12 [launcher.py:46] Route: /docs, Methods: HEAD, GET
+(ApiServer_1 pid=1306415) INFO 11-20 14:18:12 [launcher.py:46] Route: /docs/oauth2-redirect, Methods: HEAD, GET
+(ApiServer_1 pid=1306415) INFO 11-20 14:18:12 [launcher.py:46] Route: /redoc, Methods: HEAD, GET
+(ApiServer_1 pid=1306415) INFO 11-20 14:18:12 [launcher.py:46] Route: /metrics, Methods: GET
+(ApiServer_0 pid=1306414) INFO:     Started server process [1306414]
+(ApiServer_0 pid=1306414) INFO:     Waiting for application startup.
+(ApiServer_1 pid=1306415) INFO:     Started server process [1306415]
+(ApiServer_1 pid=1306415) INFO:     Waiting for application startup.
+(ApiServer_0 pid=1306414) INFO:     Application startup complete.
+(ApiServer_1 pid=1306415) INFO:     Application startup complete.
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:50818 - "GET /health HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:50834 - "GET /version HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:50834 - "GET /v1/models HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:50848 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:43752 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:50848 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:43756 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:43762 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:43766 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:43768 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:43762 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:43766 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:43752 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:43762 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:50848 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:43766 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:43768 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:43762 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:43766 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:43752 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:43762 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:43752 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:43776 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58386 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58402 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58418 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:58420 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58432 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58440 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58444 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58386 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58452 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58454 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58468 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:58420 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58440 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58454 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58386 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58476 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58488 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:58494 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58402 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58498 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:58512 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58518 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58520 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:58530 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58538 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:58540 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58548 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:46734 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:46736 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:46746 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:46756 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:43766 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:46766 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:46782 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:46790 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:46800 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:46810 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:46824 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:46836 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:46844 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:46850 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:46856 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:50848 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58520 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:46746 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58488 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:58540 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:43768 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:46836 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:43752 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58548 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:58540 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:58512 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:46782 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:46824 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:46836 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58418 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58498 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58488 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58432 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58518 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:46736 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:56744 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:46756 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:58540 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:46800 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58452 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:58494 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58548 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:46736 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58402 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:46766 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58498 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58440 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58444 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:43752 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:58540 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58538 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:43768 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:46790 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58454 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:46782 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58418 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58402 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58444 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58538 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:43756 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:58420 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:43776 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:58494 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58454 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:46810 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58444 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:43756 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:58538 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:50848 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60236 - "GET /version HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60236 - "GET /v1/models HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:56890 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:56898 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:56902 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:56916 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:56898 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:56916 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:56890 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:56902 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:56902 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:34678 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:33406 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:33418 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:33406 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:33418 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:33418 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:33406 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:50822 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:34746 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:34746 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:34746 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:33418 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:34758 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:34758 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:33418 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:50822 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:34758 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:33418 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:34758 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:34746 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:34758 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:34746 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:34758 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60238 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55088 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55088 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55096 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55098 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55108 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55088 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55110 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55122 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55136 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55122 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55096 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55108 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55110 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55136 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55096 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55122 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55136 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55088 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55108 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55110 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55096 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:44414 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:44426 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:44430 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55088 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55098 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:44434 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:44440 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55098 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55110 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:44430 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:44414 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55122 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:44434 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:59746 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:44440 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55122 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:44430 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:44434 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55098 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:59746 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:44414 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:44440 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55122 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:44430 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55108 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:44434 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55098 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:44440 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55122 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:44434 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55098 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:44430 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:44440 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55108 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55122 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60610 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60626 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55122 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55098 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60626 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60610 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55108 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60626 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60634 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:44414 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60644 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:60658 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60668 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60644 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55108 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60634 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55088 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60644 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:44434 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:60192 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:44434 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55096 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:44414 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55122 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60610 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55096 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:60658 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55098 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:44434 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60626 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55108 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60610 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:44426 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60668 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55122 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:60192 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60610 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60668 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:44426 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55088 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55122 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60626 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60668 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:38584 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:35416 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60634 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:38584 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:35426 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:35442 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:35450 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:35426 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:35416 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55122 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60634 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:35450 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:38584 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60668 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:35416 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60634 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:35464 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:35470 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:35486 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:35502 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:35504 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:35506 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:35508 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:35510 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:52074 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:52080 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:35416 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:35486 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:35504 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:52074 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:60668 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_1 pid=1306415) INFO:     127.0.0.1:38584 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:35502 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:35486 - "POST /v1/completions HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+(ApiServer_0 pid=1306414) INFO:     127.0.0.1:55084 - "GET /metrics HTTP/1.1" 200 OK
+INFO 11-20 14:23:03 [utils.py:289] Received KeyboardInterrupt, shutting down API servers...
+(ApiServer_1 pid=1306415) INFO 11-20 14:23:03 [launcher.py:137] Shutting down FastAPI HTTP server.
+(ApiServer_0 pid=1306414) WARNING 11-20 14:23:03 [launcher.py:131] port 21208 is used by process psutil.Process(pid=1306415, name='VLLM::APIServer_1', status='running') launched with command:
+(ApiServer_0 pid=1306414) WARNING 11-20 14:23:03 [launcher.py:131] VLLM::APIServer_1                                                                                                                                                                        
+(ApiServer_0 pid=1306414) INFO 11-20 14:23:03 [launcher.py:137] Shutting down FastAPI HTTP server.
+(ApiServer_1 pid=1306415) INFO:     Shutting down
+(ApiServer_0 pid=1306414) INFO:     Shutting down
+(ApiServer_0 pid=1306414) INFO:     Waiting for application shutdown.
+(ApiServer_0 pid=1306414) INFO:     Application shutdown complete.
+(ApiServer_1 pid=1306415) INFO:     Waiting for application shutdown.
+(ApiServer_1 pid=1306415) INFO:     Application shutdown complete.
+(EngineCore_DP0 pid=1306412) INFO 11-20 14:23:04 [core.py:1201] Shutdown initiated (timeout=0)
+(EngineCore_DP1 pid=1306413) INFO 11-20 14:23:04 [core.py:1201] Shutdown initiated (timeout=0)
+(EngineCore_DP0 pid=1306412) INFO 11-20 14:23:04 [core.py:1224] Shutdown complete
+(EngineCore_DP1 pid=1306413) INFO 11-20 14:23:04 [core.py:1224] Shutdown complete
+(Worker pid=1306696) INFO 11-20 14:23:04 [multiproc_executor.py:759] Parent process exited, terminating worker queues
+(Worker pid=1306697) INFO 11-20 14:23:04 [multiproc_executor.py:759] Parent process exited, terminating worker queues
+(Worker pid=1306696) INFO 11-20 14:23:04 [multiproc_executor.py:854] WorkerProc shutting down.
+(Worker pid=1306697) INFO 11-20 14:23:04 [multiproc_executor.py:854] WorkerProc shutting down.

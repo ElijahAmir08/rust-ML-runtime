@@ -1,0 +1,6 @@
+# prefill
+env CUDA_VISIBLE_DEVICES=1 VLLM_NIXL_SIDE_CHANNEL_PORT=21531 vllm serve Qwen/Qwen2.5-7B-Instruct --dtype half --max-model-len 8192 --host 127.0.0.1 --port 21529 --seed 0 --kv-transfer-config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}'
+# decode
+env CUDA_VISIBLE_DEVICES=2 VLLM_NIXL_SIDE_CHANNEL_PORT=21532 vllm serve Qwen/Qwen2.5-7B-Instruct --dtype half --max-model-len 8192 --host 127.0.0.1 --port 21530 --seed 0 --kv-transfer-config '{"kv_connector":"NixlConnector","kv_role":"kv_both"}'
+# proxy
+python ../vllm/.venv/../tests/v1/kv_connector/nixl_integration/toy_proxy_server.py --host 127.0.0.1 --port 21528 --prefiller-hosts 127.0.0.1 --prefiller-ports 21529 --decoder-hosts 127.0.0.1 --decoder-ports 21530
